@@ -2,9 +2,15 @@ const fs=require('fs');
 const vm=require('vm');
 
 function makeEl(){
+  const classes=new Set();
   return {
     innerHTML:'', textContent:'', value:'', checked:false, dataset:{}, style:{},
-    classList:{add(){},remove(){},toggle(){},contains(){return false}},
+    classList:{
+      add(c){classes.add(c)},
+      remove(c){classes.delete(c)},
+      toggle(c,on){if(on===undefined){classes.has(c)?classes.delete(c):classes.add(c)}else{on?classes.add(c):classes.delete(c)}},
+      contains(c){return classes.has(c)}
+    },
     querySelector(){return makeEl()},
     querySelectorAll(){return []},
     onclick:null,onchange:null,oninput:null,onfocus:null
@@ -22,6 +28,7 @@ const localStorage={
   setItem(k,v){store.set(k,String(v));},
   removeItem(k){store.delete(k);}
 };
+document.querySelector('#modal').classList.add('hide');
 const window={
   addEventListener(){},
   GymNative:{startRestAlarm(){return true;},cancelRestAlarm(){}}
