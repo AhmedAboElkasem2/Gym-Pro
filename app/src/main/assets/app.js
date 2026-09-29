@@ -29,8 +29,20 @@ function blankRows(ch){let src=S.performance[ch.key]||ch.preset||[],n=Math.max(1
 function video(ch){return ch.link?`<a class="video" href="${esc(ch.link)}" title="Exercise video">▶</a>`:''}
 function spec(ch){return `${ch.sets} sets × ${esc(ch.reps)} reps${ch.warmup&&ch.warmup!=='0'?` · warm-up ${esc(ch.warmup)}`:' · no warm-up'}${ch.rest?` · rest ${esc(ch.rest)} min`:''}`}
 
-function setGlobalAddVisibility(page){const add=$('#add');if(!add)return;add.style.display=page==='routines'?'grid':'none'}
-function nav(v){view=v;setGlobalAddVisibility(v);Array.from(document.querySelectorAll('nav button')).forEach(b=>b.classList.toggle('on',b.dataset.v===v));({home,routines,history,settings,builder,workout,exercise,summary}[v]||home)();scrollTo(0,0)}
+const WORKOUT_ALLOWED_VIEWS=new Set(['workout','exercise']);
+function isWorkoutNavigationLocked(){return !!work}
+function setGlobalAddVisibility(page){const add=$('#add');if(!add)return;add.style.display=page==='routines'&&!isWorkoutNavigationLocked()?'grid':'none'}
+function setWorkoutNavigationLock(){
+ const locked=isWorkoutNavigationLocked(),navEl=$('nav');
+ if(navEl)navEl.classList.toggle('workout-locked',locked);
+ Array.from(document.querySelectorAll('nav button')).forEach(b=>{b.disabled=locked;b.classList.toggle('locked',locked)});
+}
+function nav(v){
+ if(isWorkoutNavigationLocked()&&!WORKOUT_ALLOWED_VIEWS.has(v)){setWorkoutNavigationLock();toast('Finish or exit workout first');return false}
+ view=v;setGlobalAddVisibility(v);setWorkoutNavigationLock();
+ Array.from(document.querySelectorAll('nav button')).forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+ ({home,routines,history,settings,builder,workout,exercise,summary}[v]||home)();scrollTo(0,0);return true
+}
 function isModalOpen(){return !M.classList.contains('hide')}
 function showWorkoutExitDialog(){open('<h2>Exit workout?</h2><p class="mut">Your unfinished sets will not be saved.</p><div class="row"><button class="btn" id="stayWorkout">Stay</button><button class="btn danger" id="exitWorkoutNow">Exit workout</button></div>');$('#stayWorkout').onclick=close;$('#exitWorkoutNow').onclick=()=>{close();stopWorkoutClock();work=null;stopTimer();nav('routines')}}
 function handleAppBack(){if(isModalOpen()){close();return true}if(view==='workout'&&work){showWorkoutExitDialog();return true}if(view==='exercise'){nav(exerciseReturnView==='workout'&&work?'workout':exerciseReturnView||'history');return true}if(view==='summary'){nav('home');return true}if(view==='builder'){nav('routines');return true}if(view==='routines'||view==='history'||view==='settings'){nav('home');return true}return false}
@@ -381,5 +393,5 @@ function settings(){
  $('#pasteBackup').onclick=()=>{open('<h2>Paste backup JSON</h2><textarea id="im" class="input" placeholder="Paste the full JSON here"></textarea><button id="restore" class="btn primary block">Restore</button>');$('#restore').onclick=()=>applyBackupText($('#im').value)};
  $('#reset').onclick=()=>{if(confirm('Reset everything and reload the prebuilt program?')){createAutoBackup(true);S=migrateData(clone(SEED));save();nav('home')}};
 }
-Array.from(document.querySelectorAll('nav button')).forEach(b=>b.onclick=()=>nav(b.dataset.v));$('#add').onclick=addDay;M.onclick=e=>{if(e.target===M)close()};nav('home');restoreRestTimer();createAutoBackup(false)
+Array.from(document.querySelectorAll('nav button')).forEach(b=>b.onclick=()=>{if(isWorkoutNavigationLocked()){toast('Finish or exit workout first');return}nav(b.dataset.v)});$('#add').onclick=addDay;M.onclick=e=>{if(e.target===M)close()};nav('home');restoreRestTimer();createAutoBackup(false)
 })();
