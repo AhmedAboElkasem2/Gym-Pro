@@ -36,8 +36,45 @@ function builder(){
  <div class="section"><h3>Exercises</h3><span>${r.exercises.length}</span></div>
  ${r.exercises.map((e,i)=>{let ch=e.choices[0];return `<div class="card ex"><div class="exhead"><div><b>${i+1}. ${esc(ch.name)}</b><div class="mut">${spec(ch)}</div></div><div class="row">${video(ch)}<button class="btn mini" data-edit="${e.id}">Edit</button></div></div>${e.choices.length>1?`<div class="chips">${e.choices.map((c,j)=>`<span class="chip ${j===0?'on':''}">${j===0?'PRIMARY · ':''}${esc(c.name)}</span>`).join('')}</div>`:''}${e.note?`<p class="note">${esc(e.note)}</p>`:''}</div>`}).join('')||'<div class="empty">No exercises yet</div>'}
  <div class="row"><button class="btn primary" id="addEx">+ Add exercise</button><button class="btn" id="go">Start workout</button></div>`;
- $('#back').onclick=()=>nav('routines');$('#rename').onclick=()=>{let n=prompt('New day name',r.name);if(n){r.name=n.trim();save();builder()}};$('#del').onclick=()=>{if(confirm('Delete this day?')){S.routines=S.routines.filter(x=>x.id!==r.id);save();nav('routines')}};$('#addEx').onclick=()=>exForm(r);$('#go').onclick=()=>start(r.id);$$('[data-edit]').forEach(b=>b.onclick=()=>exForm(r,r.exercises.find(e=>e.id===b.dataset.edit)))
+ $('#back').onclick=()=>nav('routines');$('#rename').onclick=()=>{let n=prompt('New day name',r.name);if(n){r.name=n.trim();save();builder()}};$('#del').onclick=()=>{if(confirm('Delete this day?')){S.routines=S.routines.filter(x=>x.id!==r.id);save();nav('routines')}};$('#addEx').onclick=()=>addExerciseFlow(r);$('#go').onclick=()=>start(r.id);$$('[data-edit]').forEach(b=>b.onclick=()=>exForm(r,r.exercises.find(e=>e.id===b.dataset.edit)))
 }
+
+function exerciseLibrary(){
+ const map=new Map();
+ S.routines.forEach(day=>day.exercises.forEach(group=>group.choices.forEach(ch=>{
+   const key=ch.key||norm(ch.name);if(!key||!ch.name)return;
+   if(!map.has(key))map.set(key,{key:key,name:ch.name,choice:clone(ch),note:group.note||'',source:day.name});
+ })));
+ return [...map.values()].sort((a,b)=>a.name.localeCompare(b.name));
+}
+function addExerciseFlow(r){
+ const inDay=new Set(r.exercises.flatMap(e=>e.choices.map(ch=>ch.key||norm(ch.name))));
+ const library=exerciseLibrary().filter(x=>!inDay.has(x.key));
+ const draw=list=>{
+   const box=$('#existingExerciseList');if(!box)return;
+   box.innerHTML=list.length?list.map(x=>'<button class="existing-exercise" data-existing="'+esc(x.key)+'"><span><b>'+esc(x.name)+'</b><small>From '+esc(x.source)+' · weights & reps synced</small></span><span class="syncmark">SYNC +</span></button>').join(''):'<div class="empty">No matching exercises</div>';
+   $('[data-existing]').forEach(b=>b.onclick=()=>{
+     const item=library.find(x=>x.key===b.dataset.existing);if(!item)return;
+     const ch=clone(item.choice);ch.key=item.key;
+     const latest=S.performance[item.key];
+     if(latest&&latest.length)ch.preset=clone(latest);
+     r.exercises.push({id:uid(),name:ch.name,choices:[ch],note:item.note||''});
+     save();close();builder();toast('Existing exercise added & synced');
+   });
+ };
+ open('<h2>Add exercise</h2>'+
+ '<p class="mut">Reuse an existing exercise to keep weights and reps synced between training days, or create a completely new one.</p>'+
+ '<button class="btn primary block" id="createNewExercise">+ Create New Exercise</button>'+
+ '<div class="section"><h3>Add Existing Exercise</h3><span>SYNCED</span></div>'+
+ '<div class="field"><input id="existingSearch" class="input" placeholder="Search exercises..."></div>'+
+ '<div id="existingExerciseList"></div>'+
+ '<button class="btn block" id="cancelAddExercise">Cancel</button>');
+ $('#createNewExercise').onclick=()=>exForm(r);
+ $('#cancelAddExercise').onclick=close;
+ $('#existingSearch').oninput=e=>{const q=norm(e.target.value);draw(library.filter(x=>norm(x.name).includes(q)))};
+ draw(library);
+}
+
 function exForm(r,e){
  const d=e?clone(e):{id:uid(),name:'',choices:[{key:'',name:'',sets:2,reps:'8-12',warmup:'1~2',rest:'3~5',link:'',preset:[]}],note:''};
 
