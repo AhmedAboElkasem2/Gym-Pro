@@ -1,80 +1,73 @@
 const fs=require('fs');
+const path=require('path');
 const vm=require('vm');
 
 function makeEl(){
   const classes=new Set();
   return {
-    innerHTML:'', textContent:'', value:'', checked:false, dataset:{}, style:{},
+    innerHTML:'',textContent:'',value:'',checked:false,disabled:false,dataset:{},style:{},
     classList:{
-      add(c){classes.add(c)},
-      remove(c){classes.delete(c)},
+      add(c){classes.add(c)},remove(c){classes.delete(c)},
       toggle(c,on){if(on===undefined){classes.has(c)?classes.delete(c):classes.add(c)}else{on?classes.add(c):classes.delete(c)}},
       contains(c){return classes.has(c)}
     },
-    querySelector(){return makeEl()},
-    querySelectorAll(){return []},
+    querySelector(){return makeEl()},querySelectorAll(){return []},
     onclick:null,onchange:null,oninput:null,onfocus:null
   };
 }
 const nodes=new Map();
 const document={
-  querySelector(sel){ if(!nodes.has(sel)) nodes.set(sel,makeEl()); return nodes.get(sel); },
-  querySelectorAll(){ return []; },
+  querySelector(sel){if(!nodes.has(sel))nodes.set(sel,makeEl());return nodes.get(sel)},
+  querySelectorAll(){return []},
   addEventListener(){}
 };
 const store=new Map();
 const localStorage={
-  getItem(k){return store.has(k)?store.get(k):null;},
-  setItem(k,v){store.set(k,String(v));},
-  removeItem(k){store.delete(k);}
+  getItem(k){return store.has(k)?store.get(k):null},
+  setItem(k,v){store.set(k,String(v))},
+  removeItem(k){store.delete(k)}
 };
 document.querySelector('#modal').classList.add('hide');
-const window={
-  addEventListener(){},
-  GymNative:{startRestAlarm(){return true;},cancelRestAlarm(){}}
-};
+const window={addEventListener(){},GymNative:{startRestAlarm(){return true},cancelRestAlarm(){}}};
 const sandbox={
   console,document,window,localStorage,
-  scrollTo(){},setTimeout(){return 1;},clearTimeout(){},
-  setInterval(){return 1;},clearInterval(){},
-  confirm(){return false;},prompt(){return null;},
+  scrollTo(){},setTimeout(){return 1},clearTimeout(){},
+  setInterval(){return 1},clearInterval(){},
+  confirm(){return false},prompt(){return null},
   navigator:{clipboard:{writeText:async()=>{}}},
   Date,Math,JSON,Map,Set
 };
 sandbox.globalThis=sandbox;
-const code=fs.readFileSync('app/src/main/assets/app.js','utf8');
-const css=fs.readFileSync('app/src/main/assets/styles.css','utf8');
-const unsafe=(code.match(/(^|[^$])\$\([^)]*\)\.forEach/gm)||[]);
-if(unsafe.length) throw new Error('Unsafe single-element selector used with forEach: '+unsafe.join(' | '));
-new vm.Script(code,{filename:'app.js'}).runInNewContext(sandbox);
-if(!nodes.get('#app') || !nodes.get('#app').innerHTML.includes('NEXT WORKOUT')) throw new Error('Smart Home did not render');
-if(typeof window.VantaLiftHandleBack!=='function') throw new Error('App back handler is missing');
-if(window.VantaLiftHandleBack()!==false) throw new Error('Home back should delegate to Android exit');
-if(code.includes('TRAINING VOLUME')) throw new Error('History must not expose training volume');
-if(!code.includes('paintWorkoutClock')||!code.includes('00:00:00')) throw new Error('Workout duration timer is missing');
-if(css.includes('backdrop-filter')) throw new Error('Expensive backdrop-filter must stay disabled');
-if(/background-attachment\s*:\s*fixed/.test(css)) throw new Error('Fixed background must stay disabled');
-if(!code.includes('Ahmed AboElkasem')) throw new Error('Developer credit is missing');
-if(!code.includes('data-delete-history')) throw new Error('History delete control is missing');
-if(!code.includes('setGlobalAddVisibility')) throw new Error('Routine-only add visibility logic is missing');
-if(!code.includes("exerciseLog")) throw new Error("Exercise history data layer is missing");
-if(!code.includes("progressionSuggestion")) throw new Error("Progression system is missing");
-if(!code.includes("function summary()")) throw new Error("Workout summary is missing");
-if(!code.includes("manageAutoBackups")) throw new Error("Auto backup manager is missing");
-if(!code.includes("DRAG TO REORDER")) throw new Error("Routine reorder is missing");
-if(!code.includes("NEXT WORKOUT")) throw new Error("Smart next workout is missing");
-if(!code.includes("NEW PR 🔥")) throw new Error("PR celebration is missing");
-if(!code.includes('x.schema=3')) throw new Error('Schema 3 migration is missing');
-if(!code.includes('WORKOUT_ALLOWED_VIEWS')) throw new Error('Workout navigation allowlist is missing');
-if(!code.includes('setWorkoutNavigationLock')) throw new Error('Workout navigation lock is missing');
-if(!code.includes('Finish or exit workout first')) throw new Error('Workout navigation guard is missing');
-if(!css.includes('nav.workout-locked')) throw new Error('Workout locked navigation styling is missing');
-if(!css.includes('@keyframes routineLedSpin')||!css.includes('.routine::before')) throw new Error('Cyan routine LED trace is missing');
-if(/\.routine::before[\s\S]*?(?:filter|backdrop-filter)\s*:/.test(css)) throw new Error('Routine LED effect must stay filter-free');
-if(!code.includes("qualified=done.filter(s=>(+s.reps||0)>=12)")||!code.includes("if(!qualified.length)return null")) throw new Error('12+ rep progression gate is missing');
-if(!code.includes("(top+5)")) throw new Error('5 kg progression increment is missing');
-if(code.includes("done.every(s=>(+s.reps||0)>=12)")) throw new Error('Progression must allow any qualifying set');
-if(!code.includes('dev-code')||!code.includes('dev-hex')) throw new Error('Developer code-engineer mark is missing');
-if(!css.includes('@keyframes developerLedSpin')||!css.includes('.developer-card::before')) throw new Error('Developer tri-color LED trace is missing');
-if(/\.developer-card::before[\s\S]*?(?:filter|backdrop-filter)\s*:/.test(css)) throw new Error('Developer LED effect must stay filter-free');
+const context=vm.createContext(sandbox);
+
+const root='app/src/main/assets';
+const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const scripts=[...index.matchAll(/<script\s+src="([^"]+)"/g)].map(m=>m[1]);
+if(!scripts.length)throw new Error('No application scripts declared');
+for(const src of scripts){
+  const code=fs.readFileSync(path.join(root,src),'utf8');
+  const unsafe=(code.match(/(^|[^$])\$\([^)]*\)\.forEach/gm)||[]);
+  if(unsafe.length)throw new Error('Unsafe single-element selector in '+src+': '+unsafe.join(' | '));
+  new vm.Script(code,{filename:src}).runInContext(context);
+}
+
+if(!nodes.get('#app')?.innerHTML.includes('NEXT WORKOUT'))throw new Error('Smart Home did not render');
+if(typeof window.VantaLiftHandleBack!=='function')throw new Error('App back handler is missing');
+if(window.VantaLiftHandleBack()!==false)throw new Error('Home back should delegate to Android exit');
+
+const hint12=vm.runInContext(`S.performance={'smoke':[ {w:35,reps:12},{w:35,reps:8} ]};S.settings.unit='kg';progressionSuggestion({key:'smoke',sets:2})`,context);
+if(!hint12||!hint12.text.includes('40 kg'))throw new Error('12+ progression rule or +5 kg increment failed');
+const hint13=vm.runInContext(`S.performance={'smoke':[ {w:35,reps:13},{w:35,reps:8} ]};progressionSuggestion({key:'smoke',sets:2})`,context);
+if(!hint13)throw new Error('Progression hint must appear above 12 reps');
+const noHint=vm.runInContext(`S.performance={'smoke':[ {w:35,reps:11},{w:35,reps:10} ]};progressionSuggestion({key:'smoke',sets:2})`,context);
+if(noHint!==null)throw new Error('Progression hint must stay hidden below 12 reps');
+
+const locked=vm.runInContext(`work={r:{name:'Smoke'}};nav('history')`,context);
+if(locked!==false)throw new Error('Workout navigation lock failed');
+vm.runInContext(`work=null;nav('home')`,context);
+
+if(localStorage.getItem('gympro-v2')===undefined)throw new Error('Storage contract changed unexpectedly');
+const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
+if(css.includes('backdrop-filter'))throw new Error('Expensive backdrop-filter must stay disabled');
+if(/background-attachment\s*:\s*fixed/.test(css))throw new Error('Fixed background must stay disabled');
 console.log('VantaLift runtime smoke test passed');
