@@ -33,6 +33,9 @@ jobs:
       - name: Runtime smoke test
         run: node scripts/smoke-test.js
 
+      - name: Create recovered backup
+        run: node scripts/recover-known-backup.js
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.9"
@@ -43,9 +46,14 @@ jobs:
       - name: Rename APK
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/Gym-Pro-v1.6.1.apk
+          cp app/build/outputs/apk/debug/app-debug.apk dist/Gym-Pro-v1.7.0.apk
 
       - uses: actions/upload-artifact@v4
         with:
           name: Gym-Pro-APK
-          path: dist/Gym-Pro-v1.6.1.apk
+          path: dist/Gym-Pro-v1.7.0.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Recovered-Gym-Pro-Backup
+          path: dist/Recovered-Gym-Pro-Backup.json
