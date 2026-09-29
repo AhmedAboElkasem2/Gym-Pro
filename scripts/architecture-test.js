@@ -20,7 +20,7 @@ const required=[
   'core/dom.js','core/utils.js','core/state.js','core/router.js',
   'data/seed-data.js','data/store.js','domain/workout-finish.js',
   'services/timers.js','services/backup.js','ui/primitives.js',
-  'views/home.js','views/builder.js','views/workout.js','views/history.js','views/settings.js'
+  'views/home.js','views/builder.js','features/exercise-library.js','views/exercise-editor.js','views/workout.js','views/history.js','views/settings.js'
 ];
 for(const module of required){
   if(!scripts.includes(module)) throw new Error('Architecture module missing: '+module);
