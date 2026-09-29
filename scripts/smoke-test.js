@@ -69,4 +69,6 @@ if(!code.includes('WORKOUT_ALLOWED_VIEWS')) throw new Error('Workout navigation 
 if(!code.includes('setWorkoutNavigationLock')) throw new Error('Workout navigation lock is missing');
 if(!code.includes('Finish or exit workout first')) throw new Error('Workout navigation guard is missing');
 if(!css.includes('nav.workout-locked')) throw new Error('Workout locked navigation styling is missing');
+if(!css.includes('@keyframes routineLedSpin')||!css.includes('.routine::before')) throw new Error('Cyan routine LED trace is missing');
+if(/\.routine::before[\s\S]*?(?:filter|backdrop-filter)\s*:/.test(css)) throw new Error('Routine LED effect must stay filter-free');
 console.log('VantaLift runtime smoke test passed');
