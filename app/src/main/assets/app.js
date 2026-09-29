@@ -255,12 +255,54 @@ function history(){
  T.textContent='History';A.innerHTML=`<div class="stats"><div class="stat"><b>${S.history.length}</b><span>WORKOUTS</span></div><div class="stat"><b>${Math.round(S.history.reduce((a,h)=>a+h.vol,0))}</b><span>VOLUME</span></div><div class="stat"><b>${S.history.reduce((a,h)=>a+h.sets,0)}</b><span>SETS</span></div></div>
  <div class="section"><h3>Sessions</h3><span>NEWEST</span></div>${S.history.map(h=>`<div class="card history"><div><b>${esc(h.name)}</b><span class="mut">${new Date(h.ts).toLocaleDateString()} · ${h.mins} min · ${h.sets} sets</span></div><b>${Math.round(h.vol)} ${S.settings.unit}</b></div>`).join('')||'<div class="empty">No workouts logged yet</div>'}`
 }
+function normalizeBackup(x){
+ if(!x||!Array.isArray(x.routines))throw new Error('Backup has no routines');
+ x.performance=(x.performance&&typeof x.performance==='object')?x.performance:{};
+ x.history=Array.isArray(x.history)?x.history:[];
+ x.settings={...clone(SEED.settings),...(x.settings||{})};
+ x.schema=2;
+ return x;
+}
+function applyBackupText(raw){
+ try{
+  const x=normalizeBackup(JSON.parse(String(raw||'').trim()));
+  S=x;save();close();nav('home');toast('Backup restored');
+ }catch(err){
+  toast('Invalid backup');
+  open('<h2>Invalid backup</h2><p class="mut">The backup file/text is incomplete or not valid JSON.</p><button class="btn block" id="closeInvalid">Close</button>');
+  $('#closeInvalid').onclick=close;
+ }
+}
+function saveBackupFile(){
+ const data=JSON.stringify(S,null,2);
+ try{
+  if(window.GymNative&&window.GymNative.saveBackupFile){
+   window.GymNative.saveBackupFile(data);return;
+  }
+ }catch{}
+ open('<h2>Export backup</h2><p class="mut">File export is unavailable here. Copy the full JSON below.</p><textarea class="input" id="bk">'+esc(data)+'</textarea><button class="btn primary block" id="copy">Copy JSON</button>');
+ $('#copy').onclick=async()=>{try{await navigator.clipboard.writeText($('#bk').value);toast('Copied')}catch{toast('Select and copy manually')}};
+}
+function openBackupFile(){
+ try{
+  if(window.GymNative&&window.GymNative.openBackupFile){window.GymNative.openBackupFile();return}
+ }catch{}
+ open('<h2>Import backup</h2><textarea id="im" class="input" placeholder="Paste the full JSON here"></textarea><button id="restore" class="btn primary block">Restore</button>');
+ $('#restore').onclick=()=>applyBackupText($('#im').value);
+}
+window.GymProImportBackup=(raw)=>applyBackupText(raw);
+window.GymProBackupSaved=()=>toast('Backup file saved');
+window.GymProBackupError=(msg)=>toast(msg||'Backup file error');
+
 function settings(){
  T.textContent='Settings';A.innerHTML=`<div class="card"><div class="field"><label>WEIGHT UNIT</label><select id="unit" class="input"><option>kg</option><option>lb</option></select></div><div class="field"><label>DEFAULT REST TIMER (SECONDS)</label><input id="rest" type="number" class="input" value="${S.settings.rest||180}"></div>
- <div class="field"><label>BACKUP</label><button class="btn block" id="exp">Export JSON</button></div><div class="field"><button class="btn block" id="imp">Import JSON</button></div><button class="btn danger block" id="reset">Reset to AboElkasem program</button></div>`;
+ <div class="field"><label>BACKUP FILES</label><button class="btn primary block" id="saveBackup">Save Backup File (.json)</button></div><div class="field"><button class="btn block" id="loadBackup">Import Backup File</button></div>
+ <div class="field"><button class="btn block" id="copyBackup">Copy Backup JSON</button></div><div class="field"><button class="btn block" id="pasteBackup">Paste Backup JSON</button></div>
+ <button class="btn danger block" id="reset">Reset to AboElkasem program</button></div>`;
  $('#unit').value=S.settings.unit;$('#unit').onchange=e=>{S.settings.unit=e.target.value;save()};$('#rest').onchange=e=>{S.settings.rest=Math.max(30,+e.target.value||180);save()};
- $('#exp').onclick=()=>{open(`<h2>Export backup</h2><textarea class="input" id="bk">${esc(JSON.stringify(S,null,2))}</textarea><button class="btn primary block" id="copy">Copy</button>`);$('#copy').onclick=async()=>{try{await navigator.clipboard.writeText($('#bk').value);toast('Copied')}catch{toast('Select and copy manually')}}};
- $('#imp').onclick=()=>{open('<h2>Import backup</h2><textarea id="im" class="input"></textarea><button id="restore" class="btn primary block">Restore</button>');$('#restore').onclick=()=>{try{let x=JSON.parse($('#im').value);if(!x.routines)throw 0;S=x;S.schema=2;save();close();nav('home')}catch{toast('Invalid backup')}}};
+ $('#saveBackup').onclick=saveBackupFile;$('#loadBackup').onclick=openBackupFile;
+ $('#copyBackup').onclick=()=>{const data=JSON.stringify(S,null,2);open('<h2>Copy backup JSON</h2><textarea class="input" id="bk">'+esc(data)+'</textarea><button class="btn primary block" id="copy">Copy</button>');$('#copy').onclick=async()=>{try{await navigator.clipboard.writeText($('#bk').value);toast('Copied')}catch{toast('Select and copy manually')}}};
+ $('#pasteBackup').onclick=()=>{open('<h2>Paste backup JSON</h2><textarea id="im" class="input" placeholder="Paste the full JSON here"></textarea><button id="restore" class="btn primary block">Restore</button>');$('#restore').onclick=()=>applyBackupText($('#im').value)};
  $('#reset').onclick=()=>{if(confirm('Reset everything and reload the prebuilt program?')){S=clone(SEED);save();nav('home')}}
 }
 $$('nav button').forEach(b=>b.onclick=()=>nav(b.dataset.v));$('#add').onclick=()=>view==='routines'?addDay():nav('routines');M.onclick=e=>{if(e.target===M)close()};nav('home');restoreRestTimer()
