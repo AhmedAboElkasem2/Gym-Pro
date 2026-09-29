@@ -7,3 +7,14 @@
 .existing-exercise b{display:block;font-size:15px}
 .existing-exercise small{display:block;color:#858585;margin-top:4px;font-size:10px}
 .syncmark{flex:0 0 auto;color:#70d875;background:#15351a;border:1px solid #27592e;border-radius:999px;padding:7px 9px;font-size:10px;font-weight:900;letter-spacing:.05em}
+
+.name-picker{position:relative}
+.name-suggestions{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:80;max-height:280px;overflow:auto;background:#101010;border:1px solid #353535;border-radius:15px;padding:6px;box-shadow:0 16px 45px #000c}
+.name-suggestions.show{display:block}
+.name-suggestion{width:100%;border:0;border-bottom:1px solid #242424;background:transparent;color:#fff;padding:11px 10px;display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left}
+.name-suggestion:last-child{border-bottom:0}
+.name-suggestion:active{background:#1d1d1d}
+.name-suggestion b{display:block;font-size:14px}
+.name-suggestion small{display:block;color:#858585;font-size:10px;margin-top:3px}
+.name-suggestion>span:last-child{color:#70d875;font-size:18px;font-weight:900}
+.name-suggestion-empty{padding:14px;color:#777;text-align:center;font-size:12px}
