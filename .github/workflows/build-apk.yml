@@ -2,7 +2,7 @@ name: Build VantaLift APK
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "esm-clean-v31" ]
   schedule:
     - cron: "17 4 * * 0"
 permissions:
@@ -30,6 +30,12 @@ jobs:
           echo "Stable Gym Pro signing key cache is missing. Refusing to rotate the app signing key."
           exit 1
 
+      - name: Bundle ES modules
+        run: npx --yes esbuild@0.25.10 app/src/main/web-src/main.mjs --bundle --format=iife --target=chrome100 --outfile=app/src/main/assets/app.bundle.js
+
+      - name: Unit tests
+        run: node --test scripts/unit/*.test.mjs
+
       - name: Architecture guard
         run: node scripts/architecture-test.js
 
@@ -49,12 +55,12 @@ jobs:
       - name: Rename APK
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/VantaLift-v3.0.0.apk
+          cp app/build/outputs/apk/debug/app-debug.apk dist/VantaLift-v3.1.0.apk
 
       - uses: actions/upload-artifact@v4
         with:
           name: VantaLift-APK
-          path: dist/VantaLift-v3.0.0.apk
+          path: dist/VantaLift-v3.1.0.apk
 
       - uses: actions/upload-artifact@v4
         with:
