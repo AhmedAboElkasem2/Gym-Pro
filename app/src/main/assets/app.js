@@ -14,8 +14,13 @@ function blankRows(ch){let src=S.performance[ch.key]||ch.preset||[],n=Math.max(1
 function video(ch){return ch.link?`<a class="video" href="${esc(ch.link)}" title="Exercise video">▶</a>`:''}
 function spec(ch){return `${ch.sets} sets × ${esc(ch.reps)} reps${ch.warmup&&ch.warmup!=='0'?` · warm-up ${esc(ch.warmup)}`:' · no warm-up'}${ch.rest?` · rest ${esc(ch.rest)} min`:''}`}
 
+function setGlobalAddVisibility(page){
+ const add=$('#add');if(!add)return;
+ add.style.display=page==='routines'?'grid':'none';
+}
 function nav(v){
  view=v;
+ setGlobalAddVisibility(v);
  Array.from(document.querySelectorAll('nav button')).forEach(b=>b.classList.toggle('on',b.dataset.v===v));
  ({home,routines,history,settings,builder,workout}[v]||home)();
  scrollTo(0,0);
@@ -288,6 +293,15 @@ function finish(){
  let sets=0,vol=0;work.r.exercises.forEach(e=>{let ch=selected(e),rows=work.rows[e.id];rows.forEach(s=>{if(s.done){sets++;vol+=(+s.w||0)*(+s.reps||0)}});S.performance[ch.key]=rows.map(s=>({w:+s.w||0,reps:+s.reps||0}))});
  S.history.unshift({id:uid(),name:work.r.name,ts:Date.now(),mins:Math.max(1,Math.round((Date.now()-work.start)/60000)),sets,vol});S.history=S.history.slice(0,100);save();stopWorkoutClock();work=null;stopTimer();nav('history');toast('Workout saved')
 }
+function confirmHistoryDelete(historyId){
+ const item=S.history.find(h=>h.id===historyId);if(!item)return;
+ open(`<h2>Delete session?</h2><p class="mut">Remove <b>${esc(item.name)}</b> from your workout history?</p><div class="row"><button class="btn" id="keepHistory">Cancel</button><button class="btn danger" id="deleteHistoryNow">Delete</button></div>`);
+ $('#keepHistory').onclick=close;
+ $('#deleteHistoryNow').onclick=()=>{
+  S.history=S.history.filter(h=>h.id!==historyId);
+  save();close();history();toast('History session deleted');
+ };
+}
 function history(){
  const totalSets=S.history.reduce((sum,h)=>sum+(+h.sets||0),0);
  const totalMinutes=S.history.reduce((sum,h)=>sum+(+h.mins||0),0);
@@ -298,7 +312,8 @@ function history(){
   <div class="stat"><b>${totalMinutes}</b><span>MINUTES</span></div>
  </div>
  <div class="section"><h3>Sessions</h3><span>NEWEST</span></div>
- ${S.history.map(h=>`<div class="card history"><div><b>${esc(h.name)}</b><span class="mut">${new Date(h.ts).toLocaleDateString()} · ${h.mins} min · ${h.sets} sets</span></div></div>`).join('')||'<div class="empty">No workouts logged yet</div>'}`;
+ ${S.history.map(h=>`<div class="card history"><div class="history-copy"><b>${esc(h.name)}</b><span class="mut">${new Date(h.ts).toLocaleDateString()} · ${h.mins} min · ${h.sets} sets</span></div><button class="history-delete" data-delete-history="${h.id}" aria-label="Delete history session"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 9v8m4-8v8m4-8v8M5 6h14M9 6V4h6v2m-9 0 1 15h10l1-15"/></svg></button></div>`).join('')||'<div class="empty">No workouts logged yet</div>'}`;
+ $$('[data-delete-history]').forEach(b=>b.onclick=()=>confirmHistoryDelete(b.dataset.deleteHistory));
 }
 function normalizeBackup(x){
  if(!x||!Array.isArray(x.routines))throw new Error('Backup has no routines');
@@ -343,12 +358,13 @@ function settings(){
  T.textContent='Settings';A.innerHTML=`<div class="card"><div class="field"><label>WEIGHT UNIT</label><select id="unit" class="input"><option>kg</option><option>lb</option></select></div><div class="field"><label>DEFAULT REST TIMER (SECONDS)</label><input id="rest" type="number" class="input" value="${S.settings.rest||180}"></div>
  <div class="field"><label>BACKUP FILES</label><button class="btn primary block" id="saveBackup">Save Backup File (.json)</button></div><div class="field"><button class="btn block" id="loadBackup">Import Backup File</button></div>
  <div class="field"><button class="btn block" id="copyBackup">Copy Backup JSON</button></div><div class="field"><button class="btn block" id="pasteBackup">Paste Backup JSON</button></div>
- <button class="btn danger block" id="reset">Reset to AboElkasem program</button></div>`;
+ <button class="btn danger block" id="reset">Reset to AboElkasem program</button></div>
+ <div class="developer-card"><div class="developer-mark">AA</div><div><span>DEVELOPED BY</span><strong>Ahmed AboElkasem</strong><small>Crafted for VantaLift</small></div></div>`;
  $('#unit').value=S.settings.unit;$('#unit').onchange=e=>{S.settings.unit=e.target.value;save()};$('#rest').onchange=e=>{S.settings.rest=Math.max(30,+e.target.value||180);save()};
  $('#saveBackup').onclick=saveBackupFile;$('#loadBackup').onclick=openBackupFile;
  $('#copyBackup').onclick=()=>{const data=JSON.stringify(S,null,2);open('<h2>Copy backup JSON</h2><textarea class="input" id="bk">'+esc(data)+'</textarea><button class="btn primary block" id="copy">Copy</button>');$('#copy').onclick=async()=>{try{await navigator.clipboard.writeText($('#bk').value);toast('Copied')}catch{toast('Select and copy manually')}}};
  $('#pasteBackup').onclick=()=>{open('<h2>Paste backup JSON</h2><textarea id="im" class="input" placeholder="Paste the full JSON here"></textarea><button id="restore" class="btn primary block">Restore</button>');$('#restore').onclick=()=>applyBackupText($('#im').value)};
  $('#reset').onclick=()=>{if(confirm('Reset everything and reload the prebuilt program?')){S=clone(SEED);save();nav('home')}}
 }
-$$('nav button').forEach(b=>b.onclick=()=>nav(b.dataset.v));$('#add').onclick=()=>view==='routines'?addDay():nav('routines');M.onclick=e=>{if(e.target===M)close()};nav('home');restoreRestTimer()
+$('nav button').forEach(b=>b.onclick=()=>nav(b.dataset.v));$('#add').onclick=addDay;M.onclick=e=>{if(e.target===M)close()};nav('home');restoreRestTimer()
 })();
