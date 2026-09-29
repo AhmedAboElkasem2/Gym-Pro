@@ -54,4 +54,7 @@ if(code.includes('TRAINING VOLUME')) throw new Error('History must not expose tr
 if(!code.includes('paintWorkoutClock')||!code.includes('00:00:00')) throw new Error('Workout duration timer is missing');
 if(css.includes('backdrop-filter')) throw new Error('Expensive backdrop-filter must stay disabled');
 if(/background-attachment\s*:\s*fixed/.test(css)) throw new Error('Fixed background must stay disabled');
+if(!code.includes('Ahmed AboElkasem')) throw new Error('Developer credit is missing');
+if(!code.includes('data-delete-history')) throw new Error('History delete control is missing');
+if(!code.includes('setGlobalAddVisibility')) throw new Error('Routine-only add visibility logic is missing');
 console.log('VantaLift runtime smoke test passed');
