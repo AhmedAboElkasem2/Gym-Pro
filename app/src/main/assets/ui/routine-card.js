@@ -1,0 +1,4 @@
+'use strict';
+// Routine-card component and bindings.
+function card(r,i){return `<div class="card routine" data-r="${r.id}"><div class="idx">${String(i+1).padStart(2,'0')}</div><div class="grow"><h3>${esc(r.name)}</h3><p>${r.exercises.length} exercise groups · ${r.exercises.reduce((a,e)=>a+(+e.choices[0].sets||0),0)} working sets</p></div><div class="routine-actions"><button class="btn editday" data-editday="${r.id}">Edit</button><button class="btn" data-start="${r.id}">Start</button></div></div>`}
+function bindCards(){$$('[data-r]').forEach(e=>e.onclick=x=>{if(x.target.closest('[data-start],[data-editday]'))return;rid=e.dataset.r;nav('builder')});$$('[data-editday]').forEach(b=>b.onclick=e=>{e.stopPropagation();rid=b.dataset.editday;nav('builder')});$$('[data-start]').forEach(b=>b.onclick=e=>{e.stopPropagation();start(b.dataset.start)})}
