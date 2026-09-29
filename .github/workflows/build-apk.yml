@@ -30,6 +30,9 @@ jobs:
           echo "Stable Gym Pro signing key cache is missing. Refusing to rotate the app signing key."
           exit 1
 
+      - name: Architecture guard
+        run: node scripts/architecture-test.js
+
       - name: Runtime smoke test
         run: node scripts/smoke-test.js
 
@@ -46,12 +49,12 @@ jobs:
       - name: Rename APK
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/VantaLift-v2.0.4.apk
+          cp app/build/outputs/apk/debug/app-debug.apk dist/VantaLift-v3.0.0.apk
 
       - uses: actions/upload-artifact@v4
         with:
           name: VantaLift-APK
-          path: dist/VantaLift-v2.0.4.apk
+          path: dist/VantaLift-v3.0.0.apk
 
       - uses: actions/upload-artifact@v4
         with:
