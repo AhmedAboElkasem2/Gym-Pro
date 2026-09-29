@@ -49,3 +49,7 @@ if(activity.includes('ACTION_CREATE_DOCUMENT')) throw new Error('Backup I/O leak
 
 if(!fs.existsSync('app/src/main/assets/app.bundle.js')) throw new Error('Generated web bundle missing');
 console.log('VantaLift ES-module architecture guard passed');
+
+const gradle=fs.readFileSync('app/build.gradle','utf8');
+if(!gradle.includes('tasks.register("bundleWeb", Exec)')) throw new Error('Gradle must own web bundling');
+if(!gradle.includes('preBuild.dependsOn bundleWeb')) throw new Error('Android build must depend on the web bundle');
