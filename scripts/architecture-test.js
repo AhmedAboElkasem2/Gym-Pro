@@ -26,3 +26,18 @@ for(const module of required){
   if(!scripts.includes(module)) throw new Error('Architecture module missing: '+module);
 }
 console.log('VantaLift architecture test passed');
+
+const javaRoot='app/src/main/java/com/ahmed/gympro';
+const javaModules=[
+  'MainActivity.java','RestAlarmScheduler.java','BackupFileManager.java',
+  'GymNativeBridge.java','VantaWebViewClient.java','WindowInsetsHelper.java'
+];
+for(const file of javaModules){
+  if(!fs.existsSync(path.join(javaRoot,file))) throw new Error('Native architecture module missing: '+file);
+}
+const mainActivity=fs.readFileSync(path.join(javaRoot,'MainActivity.java'),'utf8');
+const mainLines=mainActivity.split('\n').length;
+if(mainLines>170) throw new Error('MainActivity became a God Activity: '+mainLines+' lines');
+if(mainActivity.includes('class GymNativeBridge')) throw new Error('Native bridge leaked back into MainActivity');
+if(mainActivity.includes('setExactAndAllowWhileIdle')) throw new Error('Alarm scheduling leaked back into MainActivity');
+if(mainActivity.includes('ACTION_CREATE_DOCUMENT')) throw new Error('Backup file I/O leaked back into MainActivity');
