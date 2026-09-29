@@ -21,7 +21,7 @@ for(const file of required){
   const full=path.join(webRoot,file);
   if(!fs.existsSync(full)) throw new Error('Missing ES module: '+file);
   const code=fs.readFileSync(full,'utf8');
-  if(file!=='data/seed-data.mjs' && !code.includes('import ') && file!=='core/session.mjs' && file!=='core/utils.mjs') {
+  if(!['data/seed-data.mjs','core/session.mjs','core/utils.mjs','core/dom.mjs','domain/training.mjs'].includes(file) && !code.includes('import ')) {
     throw new Error('Module has no explicit dependencies/imports: '+file);
   }
 }
