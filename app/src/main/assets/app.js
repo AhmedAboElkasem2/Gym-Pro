@@ -217,7 +217,7 @@ function workout(){
  $$('[data-wf]').forEach(el=>el.onchange=()=>work.warm[el.dataset.ex][+el.dataset.i][el.dataset.wf]=el.value);
  $$('[data-addwarm]').forEach(b=>b.onclick=()=>{let e=r.exercises.find(x=>x.id===b.dataset.addwarm),ch=selected(e),arr=work.warm[e.id],mx=warmMax(ch.warmup);if(arr.length>=mx)return toast(`Max warm-up: ${mx}`);arr.push({w:'',reps:''});workout()});
  $$('[data-rmwarm]').forEach(b=>b.onclick=()=>{work.warm[b.dataset.rmwarm].splice(+b.dataset.i,1);workout()});
- $('[data-choice]').forEach(b=>b.onclick=()=>{let e=r.exercises.find(x=>x.id===b.dataset.ex);work.choiceKeys[e.id]=b.dataset.choice;let ch=selected(e);work.rows[e.id]=blankRows(ch);work.warm[e.id]=[];workout()});
+ Array.from(document.querySelectorAll('[data-choice]')).forEach(b=>b.onclick=()=>{let e=r.exercises.find(x=>x.id===b.dataset.ex);work.choiceKeys[e.id]=b.dataset.choice;let ch=selected(e);work.rows[e.id]=blankRows(ch);work.warm[e.id]=[];workout()});
  startWorkoutClock();
 }
 function fmtElapsed(ms){
