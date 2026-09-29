@@ -41,7 +41,8 @@ public class MainActivity extends Activity {
     webView.addJavascriptInterface(new GymNativeBridge(), "GymNative");
     webView.setOnApplyWindowInsetsListener((view, insets) -> {
       int topInset = insets.getSystemWindowInsetTop();
-      view.setPadding(view.getPaddingLeft(), topInset, view.getPaddingRight(), view.getPaddingBottom());
+      int extraTop = (int) (10 * getResources().getDisplayMetrics().density);
+      view.setPadding(view.getPaddingLeft(), topInset + extraTop, view.getPaddingRight(), view.getPaddingBottom());
       return insets;
     });
 

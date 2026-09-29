@@ -33,7 +33,6 @@ function handleAppBack(){
  if(view==='routines'||view==='history'||view==='settings'){nav('home');return true}
  return false;
 }
-function formatTrainingVolume(value){return Math.round(+value||0).toLocaleString()}
 window.VantaLiftHandleBack=handleAppBack;
 function card(r,i){return `<div class="card routine" data-r="${r.id}"><div class="idx">${String(i+1).padStart(2,'0')}</div><div class="grow"><h3>${esc(r.name)}</h3><p>${r.exercises.length} exercise groups · ${r.exercises.reduce((a,e)=>a+(+e.choices[0].sets||0),0)} working sets</p></div><div class="routine-actions"><button class="btn editday" data-editday="${r.id}">Edit</button><button class="btn" data-start="${r.id}">Start</button></div></div>`}
 function bindCards(){$$('[data-r]').forEach(e=>e.onclick=x=>{if(x.target.closest('[data-start],[data-editday]'))return;rid=e.dataset.r;nav('builder')});$$('[data-editday]').forEach(b=>b.onclick=e=>{e.stopPropagation();rid=b.dataset.editday;nav('builder')});$$('[data-start]').forEach(b=>b.onclick=e=>{e.stopPropagation();start(b.dataset.start)})}
@@ -272,17 +271,16 @@ function finish(){
  S.history.unshift({id:uid(),name:work.r.name,ts:Date.now(),mins:Math.max(1,Math.round((Date.now()-work.start)/60000)),sets,vol});S.history=S.history.slice(0,100);save();work=null;stopTimer();nav('history');toast('Workout saved')
 }
 function history(){
- const totalVolume=S.history.reduce((sum,h)=>sum+(+h.vol||0),0);
  const totalSets=S.history.reduce((sum,h)=>sum+(+h.sets||0),0);
+ const totalMinutes=S.history.reduce((sum,h)=>sum+(+h.mins||0),0);
  T.textContent='History';
  A.innerHTML=`<div class="stats">
   <div class="stat"><b>${S.history.length}</b><span>WORKOUTS</span></div>
-  <div class="stat"><b>${formatTrainingVolume(totalVolume)}</b><span>TRAINING VOLUME</span><small>weight × reps</small></div>
-  <div class="stat"><b>${totalSets}</b><span>SETS</span></div>
+  <div class="stat"><b>${totalSets}</b><span>TOTAL SETS</span></div>
+  <div class="stat"><b>${totalMinutes}</b><span>MINUTES</span></div>
  </div>
- <div class="volume-note">Training volume is the sum of weight × reps across completed sets — it is not one lifted weight.</div>
  <div class="section"><h3>Sessions</h3><span>NEWEST</span></div>
- ${S.history.map(h=>`<div class="card history"><div><b>${esc(h.name)}</b><span class="mut">${new Date(h.ts).toLocaleDateString()} · ${h.mins} min · ${h.sets} sets</span></div><div class="history-volume"><b>${formatTrainingVolume(h.vol)}</b><span>${S.settings.unit}·reps</span></div></div>`).join('')||'<div class="empty">No workouts logged yet</div>'}`;
+ ${S.history.map(h=>`<div class="card history"><div><b>${esc(h.name)}</b><span class="mut">${new Date(h.ts).toLocaleDateString()} · ${h.mins} min · ${h.sets} sets</span></div></div>`).join('')||'<div class="empty">No workouts logged yet</div>'}`;
 }
 function normalizeBackup(x){
  if(!x||!Array.isArray(x.routines))throw new Error('Backup has no routines');

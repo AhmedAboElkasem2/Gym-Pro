@@ -49,4 +49,5 @@ new vm.Script(code,{filename:'app.js'}).runInNewContext(sandbox);
 if(!nodes.get('#app') || !nodes.get('#app').innerHTML.includes('Train. Log.')) throw new Error('Home screen did not render');
 if(typeof window.VantaLiftHandleBack!=='function') throw new Error('App back handler is missing');
 if(window.VantaLiftHandleBack()!==false) throw new Error('Home back should delegate to Android exit');
-console.log('Gym Pro runtime smoke test passed');
+if(code.includes('TRAINING VOLUME')) throw new Error('History must not expose training volume');
+console.log('VantaLift runtime smoke test passed');
