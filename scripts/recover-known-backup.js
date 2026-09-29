@@ -1,7 +1,7 @@
 const fs=require('fs');
 
-const src=fs.readFileSync('app/src/main/assets/data/seed-data.js','utf8');
-const marker='const SEED=';
+const src=fs.readFileSync('app/src/main/web-src/data/seed-data.mjs','utf8');
+const marker='export const SEED=';
 const start=src.indexOf(marker);
 const end=src.indexOf(';',start);
 if(start<0||end<0) throw new Error('Could not locate SEED data');
