@@ -137,21 +137,41 @@ html,body{overscroll-behavior-y:none}
 .history-delete:active{background:rgba(240,68,68,.16);transform:scale(.97)}
 .history-delete svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .developer-card{
-  position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;margin-top:18px;padding:17px;
-  border:1px solid rgba(141,114,255,.2);border-radius:20px;
-  background:linear-gradient(135deg,rgba(141,114,255,.11),rgba(240,68,68,.08) 55%,rgba(15,17,22,.98));
+  position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;gap:14px;margin-top:18px;padding:17px;
+  border:1px solid transparent;border-radius:20px;background:#0d0f14;contain:paint;
+}
+.developer-card::before{
+  content:"";position:absolute;inset:-180%;z-index:0;pointer-events:none;
+  background:conic-gradient(
+    from 0deg,
+    transparent 0deg 250deg,
+    rgba(55,239,255,0) 258deg,
+    rgba(55,239,255,.95) 276deg,
+    rgba(141,114,255,1) 296deg,
+    rgba(240,68,68,1) 318deg,
+    rgba(55,239,255,.9) 339deg,
+    transparent 360deg
+  );
+  transform:rotate(0deg);transform-origin:center;will-change:transform;
+  animation:developerLedSpin 6.4s linear infinite;
 }
 .developer-card::after{
-  content:"";position:absolute;width:100px;height:100px;right:-50px;top:-52px;border-radius:50%;
-  border:1px solid rgba(255,255,255,.05)
+  content:"";position:absolute;inset:1px;z-index:1;pointer-events:none;border-radius:19px;
+  background:linear-gradient(135deg,#11141a,#0d1016 55%,#10121a);
 }
+.developer-card>*{position:relative;z-index:2}
+@keyframes developerLedSpin{to{transform:rotate(360deg)}}
 .developer-mark{
-  width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-weight:950;letter-spacing:.06em;
-  color:#fff;background:linear-gradient(135deg,#f04444,#8d72ff)
+  flex:0 0 54px;width:54px;height:54px;border-radius:16px;display:grid;place-items:center;
+  border:1px solid rgba(255,255,255,.08);background:linear-gradient(145deg,#171a21,#0d1015);
 }
+.developer-mark svg{width:36px;height:36px;overflow:visible}
+.developer-mark .dev-hex{fill:none;stroke:rgba(141,114,255,.72);stroke-width:1.3}
+.developer-mark .dev-code{fill:none;stroke:#dffcff;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round}
 .developer-card span{display:block;color:#8e919b;font-size:9px;font-weight:900;letter-spacing:.18em}
 .developer-card strong{display:block;margin-top:3px;font-size:17px}
 .developer-card small{display:block;margin-top:3px;color:#737784;font-size:10px}
+@media(prefers-reduced-motion:reduce){.developer-card::before{animation:none}}
 
 /* VantaLift 2.0 */
 .smart-hero h2{margin-bottom:8px}
