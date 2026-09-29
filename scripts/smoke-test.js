@@ -74,4 +74,7 @@ if(/\.routine::before[\s\S]*?(?:filter|backdrop-filter)\s*:/.test(css)) throw ne
 if(!code.includes("qualified=done.filter(s=>(+s.reps||0)>=12)")||!code.includes("if(!qualified.length)return null")) throw new Error('12+ rep progression gate is missing');
 if(!code.includes("(top+5)")) throw new Error('5 kg progression increment is missing');
 if(code.includes("done.every(s=>(+s.reps||0)>=12)")) throw new Error('Progression must allow any qualifying set');
+if(!code.includes('dev-code')||!code.includes('dev-hex')) throw new Error('Developer code-engineer mark is missing');
+if(!css.includes('@keyframes developerLedSpin')||!css.includes('.developer-card::before')) throw new Error('Developer tri-color LED trace is missing');
+if(/\.developer-card::before[\s\S]*?(?:filter|backdrop-filter)\s*:/.test(css)) throw new Error('Developer LED effect must stay filter-free');
 console.log('VantaLift runtime smoke test passed');
