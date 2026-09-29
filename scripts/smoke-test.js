@@ -43,6 +43,7 @@ const sandbox={
 };
 sandbox.globalThis=sandbox;
 const code=fs.readFileSync('app/src/main/assets/app.js','utf8');
+const css=fs.readFileSync('app/src/main/assets/styles.css','utf8');
 const unsafe=(code.match(/(^|[^$])\$\([^)]*\)\.forEach/gm)||[]);
 if(unsafe.length) throw new Error('Unsafe single-element selector used with forEach: '+unsafe.join(' | '));
 new vm.Script(code,{filename:'app.js'}).runInNewContext(sandbox);
@@ -51,4 +52,6 @@ if(typeof window.VantaLiftHandleBack!=='function') throw new Error('App back han
 if(window.VantaLiftHandleBack()!==false) throw new Error('Home back should delegate to Android exit');
 if(code.includes('TRAINING VOLUME')) throw new Error('History must not expose training volume');
 if(!code.includes('paintWorkoutClock')||!code.includes('00:00:00')) throw new Error('Workout duration timer is missing');
+if(css.includes('backdrop-filter')) throw new Error('Expensive backdrop-filter must stay disabled');
+if(/background-attachment\s*:\s*fixed/.test(css)) throw new Error('Fixed background must stay disabled');
 console.log('VantaLift runtime smoke test passed');
