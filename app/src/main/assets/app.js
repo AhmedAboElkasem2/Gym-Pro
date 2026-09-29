@@ -14,9 +14,9 @@ function blankRows(ch){let src=S.performance[ch.key]||ch.preset||[],n=Math.max(1
 function video(ch){return ch.link?`<a class="video" href="${esc(ch.link)}" title="Exercise video">▶</a>`:''}
 function spec(ch){return `${ch.sets} sets × ${esc(ch.reps)} reps${ch.warmup&&ch.warmup!=='0'?` · warm-up ${esc(ch.warmup)}`:' · no warm-up'}${ch.rest?` · rest ${esc(ch.rest)} min`:''}`}
 
-function nav(v){view=v;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));({home,routines,history,settings,builder,workout}[v]||home)();scrollTo(0,0)}
+function nav(v){view=v;$$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));({home,routines,history,settings,builder,workout}[v]||home)();scrollTo(0,0)}
 function card(r,i){return `<div class="card routine" data-r="${r.id}"><div class="idx">${String(i+1).padStart(2,'0')}</div><div class="grow"><h3>${esc(r.name)}</h3><p>${r.exercises.length} exercise groups · ${r.exercises.reduce((a,e)=>a+(+e.choices[0].sets||0),0)} working sets</p></div><div class="routine-actions"><button class="btn editday" data-editday="${r.id}">Edit</button><button class="btn" data-start="${r.id}">Start</button></div></div>`}
-function bindCards(){$$('[data-r]').forEach(e=>e.onclick=x=>{if(x.target.closest('[data-start],[data-editday]'))return;rid=e.dataset.r;nav('builder')});$$('[data-editday]').forEach(b=>b.onclick=e=>{e.stopPropagation();rid=b.dataset.editday;nav('builder')});$$('[data-start]').forEach(b=>b.onclick=e=>{e.stopPropagation();start(b.dataset.start)})}
+function bindCards(){$$$('[data-r]').forEach(e=>e.onclick=x=>{if(x.target.closest('[data-start],[data-editday]'))return;rid=e.dataset.r;nav('builder')});$$$('[data-editday]').forEach(b=>b.onclick=e=>{e.stopPropagation();rid=b.dataset.editday;nav('builder')});$$$('[data-start]').forEach(b=>b.onclick=e=>{e.stopPropagation();start(b.dataset.start)})}
 
 function home(){
  T.textContent='Training';let total=S.routines.reduce((a,r)=>a+r.exercises.length,0),week=S.history.filter(h=>h.ts>Date.now()-6048e5).length,n=S.routines[0];
@@ -36,7 +36,7 @@ function builder(){
  <div class="section"><h3>Exercises</h3><span>${r.exercises.length}</span></div>
  ${r.exercises.map((e,i)=>{let ch=e.choices[0];return `<div class="card ex"><div class="exhead"><div><b>${i+1}. ${esc(ch.name)}</b><div class="mut">${spec(ch)}</div></div><div class="row">${video(ch)}<button class="btn mini" data-edit="${e.id}">Edit</button></div></div>${e.choices.length>1?`<div class="chips">${e.choices.map((c,j)=>`<span class="chip ${j===0?'on':''}">${j===0?'PRIMARY · ':''}${esc(c.name)}</span>`).join('')}</div>`:''}${e.note?`<p class="note">${esc(e.note)}</p>`:''}</div>`}).join('')||'<div class="empty">No exercises yet</div>'}
  <div class="row"><button class="btn primary" id="addEx">+ Add exercise</button><button class="btn" id="go">Start workout</button></div>`;
- $('#back').onclick=()=>nav('routines');$('#rename').onclick=()=>{let n=prompt('New day name',r.name);if(n){r.name=n.trim();save();builder()}};$('#del').onclick=()=>{if(confirm('Delete this day?')){S.routines=S.routines.filter(x=>x.id!==r.id);save();nav('routines')}};$('#addEx').onclick=()=>addExerciseFlow(r);$('#go').onclick=()=>start(r.id);$$('[data-edit]').forEach(b=>b.onclick=()=>exForm(r,r.exercises.find(e=>e.id===b.dataset.edit)))
+ $('#back').onclick=()=>nav('routines');$('#rename').onclick=()=>{let n=prompt('New day name',r.name);if(n){r.name=n.trim();save();builder()}};$('#del').onclick=()=>{if(confirm('Delete this day?')){S.routines=S.routines.filter(x=>x.id!==r.id);save();nav('routines')}};$('#addEx').onclick=()=>addExerciseFlow(r);$('#go').onclick=()=>start(r.id);$$$('[data-edit]').forEach(b=>b.onclick=()=>exForm(r,r.exercises.find(e=>e.id===b.dataset.edit)))
 }
 
 function exerciseLibrary(){
@@ -53,7 +53,7 @@ function addExerciseFlow(r){
  const draw=list=>{
    const box=$('#existingExerciseList');if(!box)return;
    box.innerHTML=list.length?list.map(x=>'<button class="existing-exercise" data-existing="'+esc(x.key)+'"><span><b>'+esc(x.name)+'</b><small>From '+esc(x.source)+' · weights & reps synced</small></span><span class="syncmark">SYNC +</span></button>').join(''):'<div class="empty">No matching exercises</div>';
-   $('[data-existing]').forEach(b=>b.onclick=()=>{
+   $$('[data-existing]').forEach(b=>b.onclick=()=>{
      const item=library.find(x=>x.key===b.dataset.existing);if(!item)return;
      const ch=clone(item.choice);ch.key=item.key;
      const latest=S.performance[item.key];
@@ -88,7 +88,7 @@ function exForm(r,e){
    return m?{w:+m[1],reps:+m[2]}:null;
  }).filter(Boolean);
  const syncDraft=()=>{
-   $$('.choice-editor').forEach(box=>{
+   $$$('.choice-editor').forEach(box=>{
      const i=+box.dataset.ci,ch=d.choices[i];if(!ch)return;
      ch.name=box.querySelector('[data-ce="name"]').value.trim();
      ch.sets=Math.max(1,+box.querySelector('[data-ce="sets"]').value||1);
@@ -131,7 +131,7 @@ function exForm(r,e){
      const current=d.choices[i],items=nameLibrary().filter(x=>x.key!==(current?.key||'')).slice(0,40);
      menu.innerHTML=items.length?items.map(x=>'<button type="button" class="name-suggestion" data-pick-existing="'+esc(x.key)+'" data-pick-index="'+i+'"><span><b>'+esc(x.name)+'</b><small>'+esc(x.source)+' · synced</small></span><span>↻</span></button>').join(''):'<div class="name-suggestion-empty">No other exercises yet</div>';
      menu.classList.add('show');
-     $('[data-pick-existing]').forEach(b=>b.onclick=()=>{
+     $$('[data-pick-existing]').forEach(b=>b.onclick=()=>{
        syncDraft();
        const idx=+b.dataset.pickIndex,item=nameLibrary().find(x=>x.key===b.dataset.pickExisting);if(!item)return;
        const chosen=clone(item.choice);
@@ -142,13 +142,13 @@ function exForm(r,e){
        render();
      });
    };
-   $('.exercise-name-input').forEach(input=>{
+   $$('.exercise-name-input').forEach(input=>{
      input.oninput=()=>showNameSuggestions(input);
      input.onfocus=()=>showNameSuggestions(input);
    });
    $('#addChoice').onclick=()=>{syncDraft();let p=d.choices[0]||{};d.choices.push({key:'',name:'',sets:p.sets||2,reps:p.reps||'8-12',warmup:p.warmup??'0',rest:p.rest||'',link:'',preset:[],_originalName:'',_originalKey:''});render()};
-   $$('[data-removechoice]').forEach(b=>b.onclick=()=>{syncDraft();if(d.choices.length<=1)return toast('Keep at least one option');d.choices.splice(+b.dataset.removechoice,1);render()});
-   $$('[data-primary]').forEach(b=>b.onclick=()=>{syncDraft();let i=+b.dataset.primary,[x]=d.choices.splice(i,1);d.choices.unshift(x);render()});
+   $$$('[data-removechoice]').forEach(b=>b.onclick=()=>{syncDraft();if(d.choices.length<=1)return toast('Keep at least one option');d.choices.splice(+b.dataset.removechoice,1);render()});
+   $$$('[data-primary]').forEach(b=>b.onclick=()=>{syncDraft();let i=+b.dataset.primary,[x]=d.choices.splice(i,1);d.choices.unshift(x);render()});
    if(e)$('#deleteExercise').onclick=()=>{if(confirm('Delete this exercise completely?')){r.exercises=r.exercises.filter(x=>x.id!==e.id);save();close();builder()}};
    $('#saveExercise').onclick=()=>{
      syncDraft();
@@ -194,11 +194,11 @@ function workout(){
  ${work.rows[e.id].map((s,j)=>`<div class="setrow"><span>${j+1}</span><input class="input" type="number" step=".5" data-f="w" data-ex="${e.id}" data-i="${j}" value="${s.w}"><input class="input" type="number" data-f="reps" data-ex="${e.id}" data-i="${j}" value="${s.reps}"><input class="check" type="checkbox" data-f="done" data-ex="${e.id}" data-i="${j}" ${s.done?'checked':''}></div>`).join('')}</div>`}).join('')}
  <button class="btn primary block finish" id="finish">Finish workout</button>`;
  $('#exit').onclick=()=>{open('<h2>Exit workout?</h2><p class="mut">Your unfinished sets will not be saved.</p><div class="row"><button class="btn" id="stayWorkout">Stay</button><button class="btn danger" id="exitWorkoutNow">Exit workout</button></div>');$('#stayWorkout').onclick=close;$('#exitWorkoutNow').onclick=()=>{close();work=null;stopTimer();nav('routines')}};$('#finish').onclick=finish;$('#restBtn').onclick=()=>timerLeft?stopTimer():startTimer();
- $$('[data-f]').forEach(el=>el.onchange=()=>{let s=work.rows[el.dataset.ex][+el.dataset.i],f=el.dataset.f;if(f==='done'){s.done=el.checked;if(el.checked)startTimer()}else s[f]=el.value});
- $$('[data-wf]').forEach(el=>el.onchange=()=>work.warm[el.dataset.ex][+el.dataset.i][el.dataset.wf]=el.value);
- $$('[data-addwarm]').forEach(b=>b.onclick=()=>{let e=r.exercises.find(x=>x.id===b.dataset.addwarm),ch=selected(e),arr=work.warm[e.id],mx=warmMax(ch.warmup);if(arr.length>=mx)return toast(`Max warm-up: ${mx}`);arr.push({w:'',reps:''});workout()});
- $$('[data-rmwarm]').forEach(b=>b.onclick=()=>{work.warm[b.dataset.rmwarm].splice(+b.dataset.i,1);workout()});
- $$('[data-choice]').forEach(b=>b.onclick=()=>{let e=r.exercises.find(x=>x.id===b.dataset.ex);work.choiceKeys[e.id]=b.dataset.choice;let ch=selected(e);work.rows[e.id]=blankRows(ch);work.warm[e.id]=[];workout()});
+ $$$('[data-f]').forEach(el=>el.onchange=()=>{let s=work.rows[el.dataset.ex][+el.dataset.i],f=el.dataset.f;if(f==='done'){s.done=el.checked;if(el.checked)startTimer()}else s[f]=el.value});
+ $$$('[data-wf]').forEach(el=>el.onchange=()=>work.warm[el.dataset.ex][+el.dataset.i][el.dataset.wf]=el.value);
+ $$$('[data-addwarm]').forEach(b=>b.onclick=()=>{let e=r.exercises.find(x=>x.id===b.dataset.addwarm),ch=selected(e),arr=work.warm[e.id],mx=warmMax(ch.warmup);if(arr.length>=mx)return toast(`Max warm-up: ${mx}`);arr.push({w:'',reps:''});workout()});
+ $$$('[data-rmwarm]').forEach(b=>b.onclick=()=>{work.warm[b.dataset.rmwarm].splice(+b.dataset.i,1);workout()});
+ $$$('[data-choice]').forEach(b=>b.onclick=()=>{let e=r.exercises.find(x=>x.id===b.dataset.ex);work.choiceKeys[e.id]=b.dataset.choice;let ch=selected(e);work.rows[e.id]=blankRows(ch);work.warm[e.id]=[];workout()});
 }
 function fmt(s){s=Math.max(0,+s||0);return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
 function startTimer(){stopTimer(false);timerLeft=+S.settings.rest||180;paintTimer();timerId=setInterval(()=>{timerLeft--;paintTimer();if(timerLeft<=0){stopTimer();toast('Rest complete')}},1000)}
@@ -220,5 +220,5 @@ function settings(){
  $('#imp').onclick=()=>{open('<h2>Import backup</h2><textarea id="im" class="input"></textarea><button id="restore" class="btn primary block">Restore</button>');$('#restore').onclick=()=>{try{let x=JSON.parse($('#im').value);if(!x.routines)throw 0;S=x;S.schema=2;save();close();nav('home')}catch{toast('Invalid backup')}}};
  $('#reset').onclick=()=>{if(confirm('Reset everything and reload the prebuilt program?')){S=clone(SEED);save();nav('home')}}
 }
-$$('nav button').forEach(b=>b.onclick=()=>nav(b.dataset.v));$('#add').onclick=()=>view==='routines'?addDay():nav('routines');M.onclick=e=>{if(e.target===M)close()};nav('home')
+$$$('nav button').forEach(b=>b.onclick=()=>nav(b.dataset.v));$('#add').onclick=()=>view==='routines'?addDay():nav('routines');M.onclick=e=>{if(e.target===M)close()};nav('home')
 })();
