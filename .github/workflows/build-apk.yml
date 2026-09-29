@@ -30,6 +30,9 @@ jobs:
           echo "Stable Gym Pro signing key cache is missing. Refusing to rotate the app signing key."
           exit 1
 
+      - name: Runtime smoke test
+        run: node scripts/smoke-test.js
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.9"
@@ -40,9 +43,9 @@ jobs:
       - name: Rename APK
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/Gym-Pro-v1.6.0.apk
+          cp app/build/outputs/apk/debug/app-debug.apk dist/Gym-Pro-v1.6.1.apk
 
       - uses: actions/upload-artifact@v4
         with:
           name: Gym-Pro-APK
-          path: dist/Gym-Pro-v1.6.0.apk
+          path: dist/Gym-Pro-v1.6.1.apk
