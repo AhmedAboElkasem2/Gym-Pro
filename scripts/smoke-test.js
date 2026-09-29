@@ -43,11 +43,12 @@ const sandbox={
 };
 sandbox.globalThis=sandbox;
 const code=fs.readFileSync('app/src/main/assets/app.js','utf8');
-const unsafe=code.split('\n').filter(line=>line.includes("$('")&&!line.includes("$('")&&line.includes('.forEach'));
+const unsafe=(code.match(/(^|[^$])\$\([^)]*\)\.forEach/gm)||[]);
 if(unsafe.length) throw new Error('Unsafe single-element selector used with forEach: '+unsafe.join(' | '));
 new vm.Script(code,{filename:'app.js'}).runInNewContext(sandbox);
 if(!nodes.get('#app') || !nodes.get('#app').innerHTML.includes('Train. Log.')) throw new Error('Home screen did not render');
 if(typeof window.VantaLiftHandleBack!=='function') throw new Error('App back handler is missing');
 if(window.VantaLiftHandleBack()!==false) throw new Error('Home back should delegate to Android exit');
 if(code.includes('TRAINING VOLUME')) throw new Error('History must not expose training volume');
+if(!code.includes('paintWorkoutClock')||!code.includes('00:00:00')) throw new Error('Workout duration timer is missing');
 console.log('VantaLift runtime smoke test passed');

@@ -39,14 +39,13 @@ public class MainActivity extends Activity {
     s.setDefaultTextEncodingName("UTF-8");
     webView.setWebChromeClient(new WebChromeClient());
     webView.addJavascriptInterface(new GymNativeBridge(), "GymNative");
-    webView.setOnApplyWindowInsetsListener((view, insets) -> {
-      int topInset = insets.getSystemWindowInsetTop();
-      int extraTop = (int) (10 * getResources().getDisplayMetrics().density);
-      view.setPadding(view.getPaddingLeft(), topInset + extraTop, view.getPaddingRight(), view.getPaddingBottom());
-      return insets;
-    });
 
     webView.setWebViewClient(new WebViewClient() {
+      @Override public void onPageFinished(WebView view, String url) {
+        super.onPageFinished(view, url);
+        applyStatusBarInsetToWeb();
+      }
+
       @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
         Uri uri = request.getUrl();
         if ("http".equals(uri.getScheme()) || "https".equals(uri.getScheme())) {
@@ -71,6 +70,19 @@ public class MainActivity extends Activity {
 
     setContentView(webView);
     webView.loadUrl("file:///android_asset/index.html");
+  }
+
+  private int statusBarHeightDp() {
+    int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+    float density = getResources().getDisplayMetrics().density;
+    int px = resourceId > 0 ? getResources().getDimensionPixelSize(resourceId) : Math.round(28 * density);
+    return Math.max(24, Math.round(px / density));
+  }
+
+  private void applyStatusBarInsetToWeb() {
+    if (webView == null) return;
+    int topDp = statusBarHeightDp();
+    jsCallback("document.documentElement.style.setProperty('--native-status-top','" + topDp + "px')");
   }
 
   private PendingIntent restAlarmIntent() {
@@ -191,7 +203,7 @@ public class MainActivity extends Activity {
 
   @Override protected void onResume() {
     super.onResume();
-    if (webView != null) webView.evaluateJavascript("if(window.GymProResume){window.GymProResume();}", null);
+    if (webView != null) { applyStatusBarInsetToWeb(); webView.evaluateJavascript("if(window.GymProResume){window.GymProResume();}", null); }
   }
 
   private void exitFromSystemBack() {
