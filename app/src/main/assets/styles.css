@@ -91,6 +91,11 @@ nav{
 }
 nav button{border:0;background:none;color:#666b76;padding:6px;display:flex;flex-direction:column;align-items:center;gap:3px}
 nav button.on{color:#fff;text-shadow:0 0 16px rgba(240,68,68,.35)}nav span{font-size:10px}
+nav.workout-locked{border-top-color:rgba(240,68,68,.24)}
+nav.workout-locked::before{content:"🔒 WORKOUT LOCKED";position:absolute;left:50%;top:-25px;transform:translateX(-50%);padding:5px 10px;border:1px solid rgba(240,68,68,.2);border-radius:999px;background:#111319;color:#ff817b;font-size:8px;font-weight:900;letter-spacing:.12em;white-space:nowrap}
+nav.workout-locked button{opacity:.28;pointer-events:none}
+nav.workout-locked button.on{opacity:.55}
+nav button:disabled{cursor:default}
 #modal{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center;}
 #modal.hide{display:none}
 .sheet{width:min(680px,100%);background:linear-gradient(160deg,#171920,#0e1015);border:1px solid var(--line2);border-radius:25px 25px 0 0;padding:20px;max-height:88vh;overflow:auto;box-shadow:0 -8px 24px rgba(0,0,0,.25)}
