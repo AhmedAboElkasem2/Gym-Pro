@@ -18,3 +18,6 @@ Push to `main` or run **Build Gym Pro APK** manually from the Actions tab.
 After the workflow succeeds, download the **Gym-Pro-APK** artifact.
 
 Android package: `com.ahmed.gympro`
+
+## Stable app updates
+Gym Pro builds now use a persistent signing identity so future APKs can be installed as updates without clearing app data. Keep the Android package `com.ahmed.gympro` unchanged.
