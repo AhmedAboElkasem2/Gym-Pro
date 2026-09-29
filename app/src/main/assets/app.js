@@ -263,5 +263,5 @@ function settings(){
  $('#imp').onclick=()=>{open('<h2>Import backup</h2><textarea id="im" class="input"></textarea><button id="restore" class="btn primary block">Restore</button>');$('#restore').onclick=()=>{try{let x=JSON.parse($('#im').value);if(!x.routines)throw 0;S=x;S.schema=2;save();close();nav('home')}catch{toast('Invalid backup')}}};
  $('#reset').onclick=()=>{if(confirm('Reset everything and reload the prebuilt program?')){S=clone(SEED);save();nav('home')}}
 }
-$('nav button').forEach(b=>b.onclick=()=>nav(b.dataset.v));$('#add').onclick=()=>view==='routines'?addDay():nav('routines');M.onclick=e=>{if(e.target===M)close()};nav('home');restoreRestTimer()
+$$('nav button').forEach(b=>b.onclick=()=>nav(b.dataset.v));$('#add').onclick=()=>view==='routines'?addDay():nav('routines');M.onclick=e=>{if(e.target===M)close()};nav('home');restoreRestTimer()
 })();
