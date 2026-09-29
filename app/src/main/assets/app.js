@@ -15,8 +15,8 @@ function video(ch){return ch.link?`<a class="video" href="${esc(ch.link)}" title
 function spec(ch){return `${ch.sets} sets × ${esc(ch.reps)} reps${ch.warmup&&ch.warmup!=='0'?` · warm-up ${esc(ch.warmup)}`:' · no warm-up'}${ch.rest?` · rest ${esc(ch.rest)} min`:''}`}
 
 function nav(v){view=v;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));({home,routines,history,settings,builder,workout}[v]||home)();scrollTo(0,0)}
-function card(r,i){return `<div class="card routine" data-r="${r.id}"><div class="idx">${String(i+1).padStart(2,'0')}</div><div class="grow"><h3>${esc(r.name)}</h3><p>${r.exercises.length} exercise groups · ${r.exercises.reduce((a,e)=>a+(+e.choices[0].sets||0),0)} working sets</p></div><button class="btn" data-start="${r.id}">Start</button></div>`}
-function bindCards(){$$('[data-r]').forEach(e=>e.onclick=x=>{if(x.target.dataset.start)return;rid=e.dataset.r;nav('builder')});$$('[data-start]').forEach(b=>b.onclick=e=>{e.stopPropagation();start(b.dataset.start)})}
+function card(r,i){return `<div class="card routine" data-r="${r.id}"><div class="idx">${String(i+1).padStart(2,'0')}</div><div class="grow"><h3>${esc(r.name)}</h3><p>${r.exercises.length} exercise groups · ${r.exercises.reduce((a,e)=>a+(+e.choices[0].sets||0),0)} working sets</p></div><div class="routine-actions"><button class="btn editday" data-editday="${r.id}">Edit</button><button class="btn" data-start="${r.id}">Start</button></div></div>`}
+function bindCards(){$('[data-r]').forEach(e=>e.onclick=x=>{if(x.target.closest('[data-start],[data-editday]'))return;rid=e.dataset.r;nav('builder')});$('[data-editday]').forEach(b=>b.onclick=e=>{e.stopPropagation();rid=b.dataset.editday;nav('builder')});$('[data-start]').forEach(b=>b.onclick=e=>{e.stopPropagation();start(b.dataset.start)})}
 
 function home(){
  T.textContent='Training';let total=S.routines.reduce((a,r)=>a+r.exercises.length,0),week=S.history.filter(h=>h.ts>Date.now()-6048e5).length,n=S.routines[0];
@@ -130,7 +130,7 @@ function workout(){
  <div class="setrow labels"><span>SET</span><span>WEIGHT</span><span>REPS</span><span>✓</span></div>
  ${work.rows[e.id].map((s,j)=>`<div class="setrow"><span>${j+1}</span><input class="input" type="number" step=".5" data-f="w" data-ex="${e.id}" data-i="${j}" value="${s.w}"><input class="input" type="number" data-f="reps" data-ex="${e.id}" data-i="${j}" value="${s.reps}"><input class="check" type="checkbox" data-f="done" data-ex="${e.id}" data-i="${j}" ${s.done?'checked':''}></div>`).join('')}</div>`}).join('')}
  <button class="btn primary block finish" id="finish">Finish workout</button>`;
- $('#exit').onclick=()=>{if(confirm('Exit workout without saving?')){work=null;stopTimer();nav('home')}};$('#finish').onclick=finish;$('#restBtn').onclick=()=>timerLeft?stopTimer():startTimer();
+ $('#exit').onclick=()=>{open('<h2>Exit workout?</h2><p class="mut">Your unfinished sets will not be saved.</p><div class="row"><button class="btn" id="stayWorkout">Stay</button><button class="btn danger" id="exitWorkoutNow">Exit workout</button></div>');$('#stayWorkout').onclick=close;$('#exitWorkoutNow').onclick=()=>{close();work=null;stopTimer();nav('routines')}};$('#finish').onclick=finish;$('#restBtn').onclick=()=>timerLeft?stopTimer():startTimer();
  $$('[data-f]').forEach(el=>el.onchange=()=>{let s=work.rows[el.dataset.ex][+el.dataset.i],f=el.dataset.f;if(f==='done'){s.done=el.checked;if(el.checked)startTimer()}else s[f]=el.value});
  $$('[data-wf]').forEach(el=>el.onchange=()=>work.warm[el.dataset.ex][+el.dataset.i][el.dataset.wf]=el.value);
  $$('[data-addwarm]').forEach(b=>b.onclick=()=>{let e=r.exercises.find(x=>x.id===b.dataset.addwarm),ch=selected(e),arr=work.warm[e.id],mx=warmMax(ch.warmup);if(arr.length>=mx)return toast(`Max warm-up: ${mx}`);arr.push({w:'',reps:''});workout()});
