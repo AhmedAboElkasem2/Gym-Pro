@@ -57,4 +57,12 @@ if(/background-attachment\s*:\s*fixed/.test(css)) throw new Error('Fixed backgro
 if(!code.includes('Ahmed AboElkasem')) throw new Error('Developer credit is missing');
 if(!code.includes('data-delete-history')) throw new Error('History delete control is missing');
 if(!code.includes('setGlobalAddVisibility')) throw new Error('Routine-only add visibility logic is missing');
+if(!code.includes("exerciseLog")) throw new Error("Exercise history data layer is missing");
+if(!code.includes("progressionSuggestion")) throw new Error("Progression system is missing");
+if(!code.includes("function summary()")) throw new Error("Workout summary is missing");
+if(!code.includes("manageAutoBackups")) throw new Error("Auto backup manager is missing");
+if(!code.includes("DRAG TO REORDER")) throw new Error("Routine reorder is missing");
+if(!code.includes("NEXT WORKOUT")) throw new Error("Smart next workout is missing");
+if(!code.includes("NEW PR 🔥")) throw new Error("PR celebration is missing");
+if(!code.includes('x.schema=3')) throw new Error('Schema 3 migration is missing');
 console.log('VantaLift runtime smoke test passed');
