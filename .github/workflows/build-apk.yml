@@ -1,0 +1,29 @@
+name: Build Gym Pro APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+      - name: Build APK
+        run: gradle :app:assembleDebug --stacktrace
+      - name: Rename APK
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk dist/Gym-Pro-v1.0.0.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Gym-Pro-APK
+          path: dist/Gym-Pro-v1.0.0.apk
