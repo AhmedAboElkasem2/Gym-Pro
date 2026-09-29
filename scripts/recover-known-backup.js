@@ -1,9 +1,9 @@
 const fs=require('fs');
 
-const src=fs.readFileSync('app/src/main/assets/app.js','utf8');
+const src=fs.readFileSync('app/src/main/assets/data/seed-data.js','utf8');
 const marker='const SEED=';
 const start=src.indexOf(marker);
-const end=src.indexOf(';\nconst clone=',start);
+const end=src.indexOf(';',start);
 if(start<0||end<0) throw new Error('Could not locate SEED data');
 const seed=JSON.parse(src.slice(start+marker.length,end));
 
@@ -25,7 +25,7 @@ if(first){
 seed.performance=seed.performance||{};
 seed.history=seed.history||[];
 seed.settings={unit:'kg',rest:180,...(seed.settings||{})};
-seed.schema=2;
+seed.schema=3;
 
 fs.mkdirSync('dist',{recursive:true});
 fs.writeFileSync('dist/Recovered-Gym-Pro-Backup.json',JSON.stringify(seed,null,2),'utf8');
