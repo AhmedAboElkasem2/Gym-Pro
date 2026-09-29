@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebChromeClient;
@@ -36,6 +37,13 @@ public class MainActivity extends Activity {
     WebSettings s = webView.getSettings();
     s.setJavaScriptEnabled(true);
     s.setDomStorageEnabled(true);
+    s.setCacheMode(WebSettings.LOAD_DEFAULT);
+    webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+    webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+    webView.setVerticalScrollBarEnabled(false);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      webView.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, true);
+    }
     s.setDefaultTextEncodingName("UTF-8");
     webView.setWebChromeClient(new WebChromeClient());
     webView.addJavascriptInterface(new GymNativeBridge(), "GymNative");
