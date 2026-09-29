@@ -16,7 +16,7 @@ function spec(ch){return `${ch.sets} sets × ${esc(ch.reps)} reps${ch.warmup&&ch
 
 function nav(v){
  view=v;
- $('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+ Array.from(document.querySelectorAll('nav button')).forEach(b=>b.classList.toggle('on',b.dataset.v===v));
  ({home,routines,history,settings,builder,workout}[v]||home)();
  scrollTo(0,0);
 }
