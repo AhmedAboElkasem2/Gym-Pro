@@ -17,3 +17,21 @@ android {
   }
   compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
+
+def npxExecutable = System.getProperty("os.name").toLowerCase().contains("windows") ? "npx.cmd" : "npx"
+
+tasks.register("bundleWeb", Exec) {
+  group = "build"
+  description = "Bundle VantaLift ES modules for the Android WebView"
+  workingDir rootDir
+  commandLine npxExecutable, "--yes", "esbuild@0.25.10",
+    "app/src/main/web-src/main.mjs",
+    "--bundle",
+    "--format=iife",
+    "--target=chrome100",
+    "--outfile=app/src/main/assets/app.bundle.js"
+  inputs.dir file("src/main/web-src")
+  outputs.file file("src/main/assets/app.bundle.js")
+}
+
+preBuild.dependsOn bundleWeb
