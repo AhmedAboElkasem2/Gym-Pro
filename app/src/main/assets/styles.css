@@ -218,3 +218,48 @@ html,body{overscroll-behavior-y:none}
  .progress-bars{height:125px}
  .last-set-note{margin-left:30px}
 }
+
+/* Cyan LED trace — routine cards only. GPU-friendly: transform animation, no blur/filter. */
+.routine{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  border-color:rgba(58,238,255,.14);
+  background:#0d0f14;
+}
+.routine::before{
+  content:"";
+  position:absolute;
+  inset:-180%;
+  z-index:0;
+  pointer-events:none;
+  background:conic-gradient(
+    from 0deg,
+    transparent 0deg 300deg,
+    rgba(55,239,255,0) 310deg,
+    rgba(55,239,255,.18) 322deg,
+    rgba(83,246,255,.92) 335deg,
+    rgba(220,255,255,1) 342deg,
+    rgba(55,239,255,.32) 350deg,
+    transparent 360deg
+  );
+  transform:rotate(0deg);
+  transform-origin:center;
+  will-change:transform;
+  animation:routineLedSpin 7s linear infinite;
+}
+.routine::after{
+  content:"";
+  position:absolute;
+  inset:1px;
+  z-index:1;
+  pointer-events:none;
+  border-radius:18px;
+  background:linear-gradient(145deg,rgba(20,22,28,.995),rgba(13,15,20,.998));
+}
+.routine>*{position:relative;z-index:2}
+.routine:nth-of-type(4n+2)::before{animation-delay:-1.75s}
+.routine:nth-of-type(4n+3)::before{animation-delay:-3.5s}
+.routine:nth-of-type(4n+4)::before{animation-delay:-5.25s}
+@keyframes routineLedSpin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.routine::before{animation:none}}
