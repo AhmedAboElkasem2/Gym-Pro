@@ -46,7 +46,7 @@ if(!nodes.get('#app')?.innerHTML.includes('NEXT WORKOUT')) throw new Error('Smar
 if(typeof window.VantaLiftHandleBack!=='function') throw new Error('App back handler missing');
 if(window.VantaLiftHandleBack()!==false) throw new Error('Home back should delegate to Android');
 if(typeof window.GymProResume!=='function') throw new Error('Native resume callback missing');
-if(!store.has('gympro-v2')) throw new Error('Persistent storage contract was not initialized');
+if(!store.has('vantalift-auto-backups-v1')) throw new Error('Startup auto-backup was not initialized');
 const css=fs.readFileSync('app/src/main/assets/styles.css','utf8');
 if(css.includes('backdrop-filter')) throw new Error('Expensive backdrop-filter must stay disabled');
 if(/background-attachment\s*:\s*fixed/.test(css)) throw new Error('Fixed background must stay disabled');
