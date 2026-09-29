@@ -36,8 +36,8 @@ const sandbox={
 };
 sandbox.globalThis=sandbox;
 const code=fs.readFileSync('app/src/main/assets/app.js','utf8');
-const unsafe=[...code.matchAll(/(?<!\\$)\\$\\([^\\)\\n]*\\)\\.forEach/g)];
-if(unsafe.length) throw new Error('Unsafe single-element selector used with forEach: '+unsafe.map(x=>x[0]).join(', '));
+const unsafe=code.split('\n').filter(line=>line.includes("$('")&&line.includes('.forEach'));
+if(unsafe.length) throw new Error('Unsafe single-element selector used with forEach: '+unsafe.join(' | '));
 new vm.Script(code,{filename:'app.js'}).runInNewContext(sandbox);
 if(!nodes.get('#app') || !nodes.get('#app').innerHTML.includes('Train. Log.')) throw new Error('Home screen did not render');
 if(typeof window.VantaLiftHandleBack!=='function') throw new Error('App back handler is missing');
