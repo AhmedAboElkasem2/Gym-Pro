@@ -65,4 +65,8 @@ if(!code.includes("DRAG TO REORDER")) throw new Error("Routine reorder is missin
 if(!code.includes("NEXT WORKOUT")) throw new Error("Smart next workout is missing");
 if(!code.includes("NEW PR 🔥")) throw new Error("PR celebration is missing");
 if(!code.includes('x.schema=3')) throw new Error('Schema 3 migration is missing');
+if(!code.includes('WORKOUT_ALLOWED_VIEWS')) throw new Error('Workout navigation allowlist is missing');
+if(!code.includes('setWorkoutNavigationLock')) throw new Error('Workout navigation lock is missing');
+if(!code.includes('Finish or exit workout first')) throw new Error('Workout navigation guard is missing');
+if(!css.includes('nav.workout-locked')) throw new Error('Workout locked navigation styling is missing');
 console.log('VantaLift runtime smoke test passed');
