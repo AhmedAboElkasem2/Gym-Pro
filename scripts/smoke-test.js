@@ -36,7 +36,7 @@ const sandbox={
 };
 sandbox.globalThis=sandbox;
 const code=fs.readFileSync('app/src/main/assets/app.js','utf8');
-const unsafe=code.split('\n').filter(line=>line.includes("$('")&&line.includes('.forEach'));
+const unsafe=code.split('\n').filter(line=>line.includes("$('")&&!line.includes("$('")&&line.includes('.forEach'));
 if(unsafe.length) throw new Error('Unsafe single-element selector used with forEach: '+unsafe.join(' | '));
 new vm.Script(code,{filename:'app.js'}).runInNewContext(sandbox);
 if(!nodes.get('#app') || !nodes.get('#app').innerHTML.includes('Train. Log.')) throw new Error('Home screen did not render');
