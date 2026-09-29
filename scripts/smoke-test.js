@@ -71,4 +71,5 @@ if(!code.includes('Finish or exit workout first')) throw new Error('Workout navi
 if(!css.includes('nav.workout-locked')) throw new Error('Workout locked navigation styling is missing');
 if(!css.includes('@keyframes routineLedSpin')||!css.includes('.routine::before')) throw new Error('Cyan routine LED trace is missing');
 if(/\.routine::before[\s\S]*?(?:filter|backdrop-filter)\s*:/.test(css)) throw new Error('Routine LED effect must stay filter-free');
+if(!code.includes("done.every(s=>(+s.reps||0)>=12)")||!code.includes("if(!ready)return null")) throw new Error('12-rep progression gate is missing');
 console.log('VantaLift runtime smoke test passed');
