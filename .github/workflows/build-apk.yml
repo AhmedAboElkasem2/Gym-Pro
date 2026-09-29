@@ -24,17 +24,11 @@ jobs:
           path: ~/.android/debug.keystore
           key: gym-pro-stable-signing-v1
 
-      - name: Create stable signing key on first run
+      - name: Verify stable signing key
         if: steps.signing-key.outputs.cache-hit != 'true'
         run: |
-          mkdir -p ~/.android
-          keytool -genkeypair -v \
-            -keystore ~/.android/debug.keystore \
-            -storepass android \
-            -alias androiddebugkey \
-            -keypass android \
-            -dname "CN=Gym Pro Stable,O=AhmedAboElkasem2,C=EG" \
-            -keyalg RSA -keysize 2048 -validity 10000
+          echo "Stable Gym Pro signing key cache is missing. Refusing to rotate the app signing key."
+          exit 1
 
       - uses: gradle/actions/setup-gradle@v4
         with:
