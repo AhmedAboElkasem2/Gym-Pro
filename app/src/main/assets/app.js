@@ -16,7 +16,7 @@ function spec(ch){return `${ch.sets} sets × ${esc(ch.reps)} reps${ch.warmup&&ch
 
 function nav(v){view=v;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));({home,routines,history,settings,builder,workout}[v]||home)();scrollTo(0,0)}
 function card(r,i){return `<div class="card routine" data-r="${r.id}"><div class="idx">${String(i+1).padStart(2,'0')}</div><div class="grow"><h3>${esc(r.name)}</h3><p>${r.exercises.length} exercise groups · ${r.exercises.reduce((a,e)=>a+(+e.choices[0].sets||0),0)} working sets</p></div><div class="routine-actions"><button class="btn editday" data-editday="${r.id}">Edit</button><button class="btn" data-start="${r.id}">Start</button></div></div>`}
-function bindCards(){$('[data-r]').forEach(e=>e.onclick=x=>{if(x.target.closest('[data-start],[data-editday]'))return;rid=e.dataset.r;nav('builder')});$('[data-editday]').forEach(b=>b.onclick=e=>{e.stopPropagation();rid=b.dataset.editday;nav('builder')});$('[data-start]').forEach(b=>b.onclick=e=>{e.stopPropagation();start(b.dataset.start)})}
+function bindCards(){$$('[data-r]').forEach(e=>e.onclick=x=>{if(x.target.closest('[data-start],[data-editday]'))return;rid=e.dataset.r;nav('builder')});$$('[data-editday]').forEach(b=>b.onclick=e=>{e.stopPropagation();rid=b.dataset.editday;nav('builder')});$$('[data-start]').forEach(b=>b.onclick=e=>{e.stopPropagation();start(b.dataset.start)})}
 
 function home(){
  T.textContent='Training';let total=S.routines.reduce((a,r)=>a+r.exercises.length,0),week=S.history.filter(h=>h.ts>Date.now()-6048e5).length,n=S.routines[0];
