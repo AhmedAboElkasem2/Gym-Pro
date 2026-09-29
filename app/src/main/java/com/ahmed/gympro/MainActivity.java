@@ -15,9 +15,20 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+
 public class MainActivity extends Activity {
   private WebView webView;
   private static final int REST_ALARM_REQUEST = 9411;
+  private static final int CREATE_BACKUP_REQUEST = 9412;
+  private static final int OPEN_BACKUP_REQUEST = 9413;
+  private String pendingBackupJson = null;
 
   @Override protected void onCreate(Bundle b) {
     super.onCreate(b);
@@ -69,6 +80,22 @@ public class MainActivity extends Activity {
     if (alarmManager != null) alarmManager.cancel(restAlarmIntent());
   }
 
+  private void jsCallback(String script) {
+    if (webView == null) return;
+    runOnUiThread(() -> webView.evaluateJavascript(script, null));
+  }
+
+  private String readText(Uri uri) throws Exception {
+    InputStream input = getContentResolver().openInputStream(uri);
+    if (input == null) throw new Exception("Could not open backup file");
+    BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+    StringBuilder out = new StringBuilder();
+    String line;
+    while ((line = reader.readLine()) != null) out.append(line).append('\n');
+    reader.close();
+    return out.toString();
+  }
+
   private class GymNativeBridge {
     @JavascriptInterface
     public boolean startRestAlarm(int seconds) {
@@ -95,6 +122,64 @@ public class MainActivity extends Activity {
     @JavascriptInterface
     public void cancelRestAlarm() {
       cancelRestAlarmInternal();
+    }
+
+    @JavascriptInterface
+    public void saveBackupFile(String json) {
+      pendingBackupJson = json;
+      runOnUiThread(() -> {
+        try {
+          Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+          intent.addCategory(Intent.CATEGORY_OPENABLE);
+          intent.setType("application/json");
+          intent.putExtra(Intent.EXTRA_TITLE, "Gym-Pro-Backup.json");
+          startActivityForResult(intent, CREATE_BACKUP_REQUEST);
+        } catch (Exception e) {
+          jsCallback("window.GymProBackupError&&window.GymProBackupError(" + JSONObject.quote("Could not open file saver") + ")");
+        }
+      });
+    }
+
+    @JavascriptInterface
+    public void openBackupFile() {
+      runOnUiThread(() -> {
+        try {
+          Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+          intent.addCategory(Intent.CATEGORY_OPENABLE);
+          intent.setType("*/*");
+          startActivityForResult(intent, OPEN_BACKUP_REQUEST);
+        } catch (Exception e) {
+          jsCallback("window.GymProBackupError&&window.GymProBackupError(" + JSONObject.quote("Could not open file picker") + ")");
+        }
+      });
+    }
+  }
+
+  @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    if (resultCode != RESULT_OK || data == null || data.getData() == null) return;
+    Uri uri = data.getData();
+
+    if (requestCode == CREATE_BACKUP_REQUEST) {
+      try {
+        OutputStream out = getContentResolver().openOutputStream(uri, "w");
+        if (out == null) throw new Exception("Could not create backup file");
+        byte[] bytes = (pendingBackupJson == null ? "{}" : pendingBackupJson).getBytes(StandardCharsets.UTF_8);
+        out.write(bytes);
+        out.flush();
+        out.close();
+        pendingBackupJson = null;
+        jsCallback("window.GymProBackupSaved&&window.GymProBackupSaved()");
+      } catch (Exception e) {
+        jsCallback("window.GymProBackupError&&window.GymProBackupError(" + JSONObject.quote("Could not save backup file") + ")");
+      }
+    } else if (requestCode == OPEN_BACKUP_REQUEST) {
+      try {
+        String raw = readText(uri);
+        jsCallback("window.GymProImportBackup&&window.GymProImportBackup(" + JSONObject.quote(raw) + ")");
+      } catch (Exception e) {
+        jsCallback("window.GymProBackupError&&window.GymProBackupError(" + JSONObject.quote("Could not read backup file") + ")");
+      }
     }
   }
 
