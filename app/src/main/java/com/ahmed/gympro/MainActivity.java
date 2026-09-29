@@ -39,6 +39,11 @@ public class MainActivity extends Activity {
     s.setDefaultTextEncodingName("UTF-8");
     webView.setWebChromeClient(new WebChromeClient());
     webView.addJavascriptInterface(new GymNativeBridge(), "GymNative");
+    webView.setOnApplyWindowInsetsListener((view, insets) -> {
+      int topInset = insets.getSystemWindowInsetTop();
+      view.setPadding(view.getPaddingLeft(), topInset, view.getPaddingRight(), view.getPaddingBottom());
+      return insets;
+    });
 
     webView.setWebViewClient(new WebViewClient() {
       @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -132,7 +137,7 @@ public class MainActivity extends Activity {
           Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
           intent.addCategory(Intent.CATEGORY_OPENABLE);
           intent.setType("application/json");
-          intent.putExtra(Intent.EXTRA_TITLE, "Gym-Pro-Backup.json");
+          intent.putExtra(Intent.EXTRA_TITLE, "VantaLift-Backup.json");
           startActivityForResult(intent, CREATE_BACKUP_REQUEST);
         } catch (Exception e) {
           jsCallback("window.GymProBackupError&&window.GymProBackupError(" + JSONObject.quote("Could not open file saver") + ")");
@@ -188,7 +193,20 @@ public class MainActivity extends Activity {
     if (webView != null) webView.evaluateJavascript("if(window.GymProResume){window.GymProResume();}", null);
   }
 
+  private void exitFromSystemBack() {
+    super.onBackPressed();
+  }
+
   @Override public void onBackPressed() {
-    if (webView.canGoBack()) webView.goBack(); else super.onBackPressed();
+    if (webView == null) {
+      exitFromSystemBack();
+      return;
+    }
+    webView.evaluateJavascript(
+      "window.VantaLiftHandleBack ? window.VantaLiftHandleBack() : false",
+      handled -> {
+        if (!"true".equals(handled)) exitFromSystemBack();
+      }
+    );
   }
 }

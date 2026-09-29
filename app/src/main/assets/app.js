@@ -14,7 +14,27 @@ function blankRows(ch){let src=S.performance[ch.key]||ch.preset||[],n=Math.max(1
 function video(ch){return ch.link?`<a class="video" href="${esc(ch.link)}" title="Exercise video">▶</a>`:''}
 function spec(ch){return `${ch.sets} sets × ${esc(ch.reps)} reps${ch.warmup&&ch.warmup!=='0'?` · warm-up ${esc(ch.warmup)}`:' · no warm-up'}${ch.rest?` · rest ${esc(ch.rest)} min`:''}`}
 
-function nav(v){view=v;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));({home,routines,history,settings,builder,workout}[v]||home)();scrollTo(0,0)}
+function nav(v){
+ view=v;
+ $('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+ ({home,routines,history,settings,builder,workout}[v]||home)();
+ scrollTo(0,0);
+}
+function isModalOpen(){return !M.classList.contains('hide')}
+function showWorkoutExitDialog(){
+ open('<h2>Exit workout?</h2><p class="mut">Your unfinished sets will not be saved.</p><div class="row"><button class="btn" id="stayWorkout">Stay</button><button class="btn danger" id="exitWorkoutNow">Exit workout</button></div>');
+ $('#stayWorkout').onclick=close;
+ $('#exitWorkoutNow').onclick=()=>{close();work=null;stopTimer();nav('routines')};
+}
+function handleAppBack(){
+ if(isModalOpen()){close();return true}
+ if(view==='workout'&&work){showWorkoutExitDialog();return true}
+ if(view==='builder'){nav('routines');return true}
+ if(view==='routines'||view==='history'||view==='settings'){nav('home');return true}
+ return false;
+}
+function formatTrainingVolume(value){return Math.round(+value||0).toLocaleString()}
+window.VantaLiftHandleBack=handleAppBack;
 function card(r,i){return `<div class="card routine" data-r="${r.id}"><div class="idx">${String(i+1).padStart(2,'0')}</div><div class="grow"><h3>${esc(r.name)}</h3><p>${r.exercises.length} exercise groups · ${r.exercises.reduce((a,e)=>a+(+e.choices[0].sets||0),0)} working sets</p></div><div class="routine-actions"><button class="btn editday" data-editday="${r.id}">Edit</button><button class="btn" data-start="${r.id}">Start</button></div></div>`}
 function bindCards(){$$('[data-r]').forEach(e=>e.onclick=x=>{if(x.target.closest('[data-start],[data-editday]'))return;rid=e.dataset.r;nav('builder')});$$('[data-editday]').forEach(b=>b.onclick=e=>{e.stopPropagation();rid=b.dataset.editday;nav('builder')});$$('[data-start]').forEach(b=>b.onclick=e=>{e.stopPropagation();start(b.dataset.start)})}
 
@@ -193,7 +213,7 @@ function workout(){
  <div class="setrow labels"><span>SET</span><span>WEIGHT</span><span>REPS</span><span>✓</span></div>
  ${work.rows[e.id].map((s,j)=>`<div class="setrow"><span>${j+1}</span><input class="input" type="number" step=".5" data-f="w" data-ex="${e.id}" data-i="${j}" value="${s.w}"><input class="input" type="number" data-f="reps" data-ex="${e.id}" data-i="${j}" value="${s.reps}"><input class="check" type="checkbox" data-f="done" data-ex="${e.id}" data-i="${j}" ${s.done?'checked':''}></div>`).join('')}</div>`}).join('')}
  <button class="btn primary block finish" id="finish">Finish workout</button>`;
- $('#exit').onclick=()=>{open('<h2>Exit workout?</h2><p class="mut">Your unfinished sets will not be saved.</p><div class="row"><button class="btn" id="stayWorkout">Stay</button><button class="btn danger" id="exitWorkoutNow">Exit workout</button></div>');$('#stayWorkout').onclick=close;$('#exitWorkoutNow').onclick=()=>{close();work=null;stopTimer();nav('routines')}};$('#finish').onclick=finish;$('#restBtn').onclick=()=>timerLeft?stopTimer():startTimer();
+ $('#exit').onclick=showWorkoutExitDialog;$('#finish').onclick=finish;$('#restBtn').onclick=()=>timerLeft?stopTimer():startTimer();
  $$('[data-f]').forEach(el=>el.onchange=()=>{let s=work.rows[el.dataset.ex][+el.dataset.i],f=el.dataset.f;if(f==='done'){s.done=el.checked;if(el.checked)startTimer()}else s[f]=el.value});
  $$('[data-wf]').forEach(el=>el.onchange=()=>work.warm[el.dataset.ex][+el.dataset.i][el.dataset.wf]=el.value);
  $$('[data-addwarm]').forEach(b=>b.onclick=()=>{let e=r.exercises.find(x=>x.id===b.dataset.addwarm),ch=selected(e),arr=work.warm[e.id],mx=warmMax(ch.warmup);if(arr.length>=mx)return toast(`Max warm-up: ${mx}`);arr.push({w:'',reps:''});workout()});
@@ -252,8 +272,17 @@ function finish(){
  S.history.unshift({id:uid(),name:work.r.name,ts:Date.now(),mins:Math.max(1,Math.round((Date.now()-work.start)/60000)),sets,vol});S.history=S.history.slice(0,100);save();work=null;stopTimer();nav('history');toast('Workout saved')
 }
 function history(){
- T.textContent='History';A.innerHTML=`<div class="stats"><div class="stat"><b>${S.history.length}</b><span>WORKOUTS</span></div><div class="stat"><b>${Math.round(S.history.reduce((a,h)=>a+h.vol,0))}</b><span>VOLUME</span></div><div class="stat"><b>${S.history.reduce((a,h)=>a+h.sets,0)}</b><span>SETS</span></div></div>
- <div class="section"><h3>Sessions</h3><span>NEWEST</span></div>${S.history.map(h=>`<div class="card history"><div><b>${esc(h.name)}</b><span class="mut">${new Date(h.ts).toLocaleDateString()} · ${h.mins} min · ${h.sets} sets</span></div><b>${Math.round(h.vol)} ${S.settings.unit}</b></div>`).join('')||'<div class="empty">No workouts logged yet</div>'}`
+ const totalVolume=S.history.reduce((sum,h)=>sum+(+h.vol||0),0);
+ const totalSets=S.history.reduce((sum,h)=>sum+(+h.sets||0),0);
+ T.textContent='History';
+ A.innerHTML=`<div class="stats">
+  <div class="stat"><b>${S.history.length}</b><span>WORKOUTS</span></div>
+  <div class="stat"><b>${formatTrainingVolume(totalVolume)}</b><span>TRAINING VOLUME</span><small>weight × reps</small></div>
+  <div class="stat"><b>${totalSets}</b><span>SETS</span></div>
+ </div>
+ <div class="volume-note">Training volume is the sum of weight × reps across completed sets — it is not one lifted weight.</div>
+ <div class="section"><h3>Sessions</h3><span>NEWEST</span></div>
+ ${S.history.map(h=>`<div class="card history"><div><b>${esc(h.name)}</b><span class="mut">${new Date(h.ts).toLocaleDateString()} · ${h.mins} min · ${h.sets} sets</span></div><div class="history-volume"><b>${formatTrainingVolume(h.vol)}</b><span>${S.settings.unit}·reps</span></div></div>`).join('')||'<div class="empty">No workouts logged yet</div>'}`;
 }
 function normalizeBackup(x){
  if(!x||!Array.isArray(x.routines))throw new Error('Backup has no routines');

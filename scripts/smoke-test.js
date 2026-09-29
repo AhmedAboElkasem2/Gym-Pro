@@ -4,7 +4,7 @@ const vm=require('vm');
 function makeEl(){
   return {
     innerHTML:'', textContent:'', value:'', checked:false, dataset:{}, style:{},
-    classList:{add(){},remove(){},toggle(){}},
+    classList:{add(){},remove(){},toggle(){},contains(){return false}},
     querySelector(){return makeEl()},
     querySelectorAll(){return []},
     onclick:null,onchange:null,oninput:null,onfocus:null
@@ -40,4 +40,6 @@ const unsafe=[...code.matchAll(/(?<!\\$)\\$\\([^\\)\\n]*\\)\\.forEach/g)];
 if(unsafe.length) throw new Error('Unsafe single-element selector used with forEach: '+unsafe.map(x=>x[0]).join(', '));
 new vm.Script(code,{filename:'app.js'}).runInNewContext(sandbox);
 if(!nodes.get('#app') || !nodes.get('#app').innerHTML.includes('Train. Log.')) throw new Error('Home screen did not render');
+if(typeof window.VantaLiftHandleBack!=='function') throw new Error('App back handler is missing');
+if(window.VantaLiftHandleBack()!==false) throw new Error('Home back should delegate to Android exit');
 console.log('Gym Pro runtime smoke test passed');
