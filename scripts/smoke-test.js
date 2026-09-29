@@ -36,6 +36,8 @@ const sandbox={
 };
 sandbox.globalThis=sandbox;
 const code=fs.readFileSync('app/src/main/assets/app.js','utf8');
+const unsafe=[...code.matchAll(/(?<!\\$)\\$\\([^\\)\\n]*\\)\\.forEach/g)];
+if(unsafe.length) throw new Error('Unsafe single-element selector used with forEach: '+unsafe.map(x=>x[0]).join(', '));
 new vm.Script(code,{filename:'app.js'}).runInNewContext(sandbox);
 if(!nodes.get('#app') || !nodes.get('#app').innerHTML.includes('Train. Log.')) throw new Error('Home screen did not render');
 console.log('Gym Pro runtime smoke test passed');
