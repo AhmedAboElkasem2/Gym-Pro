@@ -366,5 +366,5 @@ function settings(){
  $('#pasteBackup').onclick=()=>{open('<h2>Paste backup JSON</h2><textarea id="im" class="input" placeholder="Paste the full JSON here"></textarea><button id="restore" class="btn primary block">Restore</button>');$('#restore').onclick=()=>applyBackupText($('#im').value)};
  $('#reset').onclick=()=>{if(confirm('Reset everything and reload the prebuilt program?')){S=clone(SEED);save();nav('home')}}
 }
-$('nav button').forEach(b=>b.onclick=()=>nav(b.dataset.v));$('#add').onclick=addDay;M.onclick=e=>{if(e.target===M)close()};nav('home');restoreRestTimer()
+Array.from(document.querySelectorAll('nav button')).forEach(b=>b.onclick=()=>nav(b.dataset.v));$('#add').onclick=addDay;M.onclick=e=>{if(e.target===M)close()};nav('home');restoreRestTimer()
 })();
