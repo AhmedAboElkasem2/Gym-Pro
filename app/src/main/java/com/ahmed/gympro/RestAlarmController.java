@@ -12,26 +12,28 @@ final class RestAlarmController {
   }
 
   boolean schedule(int seconds) {
-    stopActiveAlarm();
-    return scheduler.schedule(seconds);
+    synchronized (RestAlarmState.class) {
+      if (isActive()) return false;
+      return scheduler.schedule(seconds);
+    }
   }
 
   void cancel() {
-    scheduler.cancel();
-    stopActiveAlarm();
+    synchronized (RestAlarmState.class) {
+      scheduler.cancel();
+    }
   }
 
   void acknowledge() {
-    scheduler.cancel();
-    stopActiveAlarm();
+    synchronized (RestAlarmState.class) {
+      scheduler.cancel();
+      RestAlarmState.deactivate(context);
+      RestAlarmService.stop(context);
+    }
   }
 
   boolean isActive() {
     return RestAlarmState.isActive(context);
   }
 
-  private void stopActiveAlarm() {
-    RestAlarmService.stop(context);
-    RestAlarmState.deactivate(context);
-  }
 }

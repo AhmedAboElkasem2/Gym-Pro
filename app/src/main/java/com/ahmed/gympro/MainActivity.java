@@ -2,6 +2,7 @@ package com.ahmed.gympro;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -15,6 +16,8 @@ public class MainActivity extends Activity {
   private WebView webView;
   private RestAlarmController restAlarmController;
   private BackupFileManager backupFileManager;
+  private final SharedPreferences.OnSharedPreferenceChangeListener alarmListener =
+    (preferences, key) -> { if ("active".equals(key)) dispatchRestAlarmState(); };
 
   @Override
   protected void onCreate(Bundle state) {
@@ -112,6 +115,18 @@ public class MainActivity extends Activity {
   }
 
   @Override
+  protected void onStart() {
+    super.onStart();
+    RestAlarmState.prefs(this).registerOnSharedPreferenceChangeListener(alarmListener);
+  }
+
+  @Override
+  protected void onStop() {
+    RestAlarmState.prefs(this).unregisterOnSharedPreferenceChangeListener(alarmListener);
+    super.onStop();
+  }
+
+  @Override
   protected void onResume() {
     super.onResume();
     if (webView == null) return;
@@ -120,6 +135,7 @@ public class MainActivity extends Activity {
       "if(window.GymProResume){window.GymProResume();}",
       null
     );
+    if (restAlarmController.isActive()) RestAlarmService.start(this);
     dispatchRestAlarmState();
   }
 

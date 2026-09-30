@@ -9,6 +9,7 @@ export function toast(message) {
 }
 
 export function openModal(html, options = {}) {
+  if (dom.modal.classList.contains('persistent-modal') && !options.persistent) return;
   dom.modal.innerHTML = `<div class="sheet">${html}</div>`;
   dom.modal.classList.toggle('persistent-modal', Boolean(options.persistent));
   dom.modal.dataset.variant = options.variant || '';
@@ -16,7 +17,7 @@ export function openModal(html, options = {}) {
 }
 
 export function closeModal(force = false) {
-  if (!force && dom.modal.classList.contains('persistent-modal')) return false;
+  if (force !== true && dom.modal.classList.contains('persistent-modal')) return false;
   dom.modal.classList.add('hide');
   dom.modal.classList.remove('persistent-modal');
   dom.modal.dataset.variant = '';

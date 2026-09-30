@@ -6,3 +6,5 @@
 /build
 /app/build
 .cxx
+
+/app/src/main/assets/app.bundle.js

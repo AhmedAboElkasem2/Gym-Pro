@@ -27,6 +27,7 @@ final class GymNativeBridge {
 
   @JavascriptInterface
   public boolean startRestAlarm(int seconds) {
+    activity.runOnUiThread(() -> RestAlarmPermissions.requestIfNeeded(activity));
     return restAlarmController.schedule(seconds);
   }
 

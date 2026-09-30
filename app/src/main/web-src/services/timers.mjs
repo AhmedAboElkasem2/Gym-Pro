@@ -97,7 +97,7 @@ function restCompleted() {
   localStorage.removeItem(REST_DEADLINE_KEY);
   paintRestTimer();
   toast('Rest complete');
-  if (!nativeRestScheduled) fallbackRestAlarm();
+  if (!window.GymNative && !nativeRestScheduled) fallbackRestAlarm();
   nativeRestScheduled = false;
 }
 
@@ -109,11 +109,20 @@ export function tickRest() {
 }
 
 export function startRestTimer() {
+  if (window.GymNative?.isRestAlarmActive?.()) {
+    window.VantaLiftRestAlarmActive?.();
+    return;
+  }
   stopRestTimer(true, true);
   restSeconds = Math.max(30, +state.settings.rest || 180);
   restDeadline = Date.now() + restSeconds * 1000;
   localStorage.setItem(REST_DEADLINE_KEY, String(restDeadline));
   nativeRestScheduled = scheduleNativeRest(restSeconds);
+  if (window.GymNative && !nativeRestScheduled) {
+    stopRestTimer();
+    toast('Rest alarm could not start. Check alarms & reminders permission, then try again.');
+    return;
+  }
   paintRestTimer();
   restTimerId = setInterval(tickRest, 500);
 }

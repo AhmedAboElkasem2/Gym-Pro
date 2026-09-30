@@ -56,3 +56,28 @@ Every release must pass, in order:
 
 The architecture guard prevents regression to implicit cross-file globals, a large
 composition root, a God Activity, or direct loading of source modules in the WebView.
+
+## Rest alarm lifecycle
+
+The native AlarmClock is the authority while the WebView is paused. Each scheduled
+rest has a persisted token: cancelled/replaced deliveries are rejected. Pending
+and ringing states are separate; cancelling a countdown or ending a workout never
+acknowledges a ringing alarm. Only the dialog's explicit OK does that.
+
+RestAlarmService owns the foreground notification and the lifetime of RestAlarmAudio.
+RestAlarmAudio loops the device alarm (with an original bundled fallback), requests
+transient MAY_DUCK audio focus, and releases focus/resources on acknowledgement.
+System audio focus interruptions pause sound until focus returns. Music stream
+volume is never manually changed. The Activity observes persisted completion while
+visible and rechecks on resume; merely opening the app does not stop the sound.
+
+Exact-alarm access is checked before starting, with permission guidance rather than
+a misleading web-timer fallback. Android 12/12L and 13+ permissions are declared.
+Force-stop, a powered-off phone, alarm volume/DND restrictions and manufacturer
+background restrictions remain outside the app's guarantee. Do not claim universal
+operation or that actual Spotify/OEM hardware was tested by emulator CI.
+
+CI additionally requires native state/focus unit tests, Android lint, and API 35/36
+device tests (locked-screen/Doze delivery, persistent notification, foreground dialog,
+Back handling and explicit OK acknowledgement) before publishing the verified APK.
+The existing application ID, workout storage and stable signing key are unchanged.
