@@ -13,7 +13,7 @@ const required=[
   'domain/training.mjs','domain/workout-completion.mjs',
   'services/timers.mjs','services/backup.mjs',
   'ui/primitives.mjs','ui/routine-card.mjs',
-  'features/exercise-library.mjs',
+  'features/exercise-library.mjs','features/rest-alarm.mjs',
   'views/home.mjs','views/builder.mjs','views/exercise-editor.mjs',
   'views/workout.mjs','views/history.mjs','views/settings.mjs'
 ];
@@ -38,7 +38,7 @@ if(!sourceFiles.includes('export const PROGRESSION_REP_THRESHOLD = 12')) throw n
 if(!sourceFiles.includes('export const PROGRESSION_WEIGHT_STEP = 5')) throw new Error('Progression increment is not explicit domain policy');
 
 const javaRoot='app/src/main/java/com/ahmed/gympro';
-const nativeModules=['MainActivity.java','RestAlarmScheduler.java','BackupFileManager.java','GymNativeBridge.java','VantaWebViewClient.java','WindowInsetsHelper.java'];
+const nativeModules=['MainActivity.java','RestAlarmScheduler.java','RestAlarmReceiver.java','RestAlarmService.java','RestAlarmState.java','RestAlarmController.java','BackupFileManager.java','GymNativeBridge.java','VantaWebViewClient.java','WindowInsetsHelper.java'];
 for(const file of nativeModules){
   if(!fs.existsSync(path.join(javaRoot,file))) throw new Error('Missing native module: '+file);
 }
@@ -64,8 +64,15 @@ if(styles.includes('@keyframes developerLedSpin')) throw new Error('Legacy dupli
 if(/\.tri-led-frame::before[\s\S]*?(?:filter|backdrop-filter)\s*:/.test(styles)) throw new Error('Shared tri-color LED must remain filter-free');
 
 const restAlarmScheduler=fs.readFileSync(path.join(javaRoot,'RestAlarmScheduler.java'),'utf8');
-const restAlarmReceiver=fs.readFileSync(path.join(javaRoot,'RestAlarmReceiver.java'),'utf8');
+const restAlarmService=fs.readFileSync(path.join(javaRoot,'RestAlarmService.java'),'utf8');
+const restAlarmFeature=fs.readFileSync(path.join(webRoot,'features/rest-alarm.mjs'),'utf8');
+const manifest=fs.readFileSync('app/src/main/AndroidManifest.xml','utf8');
 if(!restAlarmScheduler.includes('setAlarmClock')) throw new Error('Rest alarm must use AlarmClock scheduling for lock-screen reliability');
-if(!restAlarmReceiver.includes('AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK')) throw new Error('Rest alarm must request transient audio focus');
-if(!restAlarmReceiver.includes('setLooping(true)')) throw new Error('Rest alarm sound must loop for the full alert window');
-if(!restAlarmReceiver.includes('vibrate(VibrationEffect.createWaveform(pattern, 0))')) throw new Error('Rest vibration must repeat during the alert window');
+if(!restAlarmService.includes('AUDIOFOCUS_GAIN_TRANSIENT')) throw new Error('Persistent rest alarm must request transient audio focus');
+if(!restAlarmService.includes('setLooping(true)')) throw new Error('Persistent rest alarm sound must loop until acknowledged');
+if(!restAlarmService.includes('VibrationEffect.createWaveform(pattern, 0)')) throw new Error('Persistent rest vibration must repeat');
+if(!restAlarmService.includes('START_STICKY')) throw new Error('Persistent rest alarm service must survive process pressure');
+if(!manifest.includes('android:foregroundServiceType="mediaPlayback"')) throw new Error('Rest alarm foreground service type is missing');
+if(!manifest.includes('FOREGROUND_SERVICE_MEDIA_PLAYBACK')) throw new Error('Rest alarm media playback foreground-service permission is missing');
+if(!restAlarmFeature.includes('The Rest Time Is Over , Get up and BE HULK')) throw new Error('Rest-complete Hulk message is missing');
+if(!restAlarmFeature.includes('persistent: true')) throw new Error('Rest-complete dialog must be non-dismissible until OK');
