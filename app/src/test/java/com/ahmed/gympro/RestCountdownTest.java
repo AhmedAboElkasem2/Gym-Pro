@@ -31,6 +31,23 @@ public class RestCountdownTest {
     assertFalse(ringing.extras.getBoolean(Notification.EXTRA_SHOW_CHRONOMETER));
   }
 
+  @Test public void timerUsesNormalChannelAndLargeSystemCountdown() {
+    NotificationManager manager = context.getSystemService(NotificationManager.class);
+    manager.createNotificationChannel(new NotificationChannel(
+      "vantalift_rest_countdown", "Old timer", NotificationManager.IMPORTANCE_LOW));
+    Notification n = new RestAlarmNotification(context).build(false, 90_000);
+    NotificationChannel channel = manager.getNotificationChannel(n.getChannelId());
+    assertEquals(NotificationManager.IMPORTANCE_DEFAULT, channel.getImportance());
+    assertNull(channel.getSound());
+    assertFalse(channel.shouldVibrate());
+    assertNotNull(n.contentView);
+    assertNotNull(n.bigContentView);
+    android.view.View view = n.contentView.apply(context, new android.widget.FrameLayout(context));
+    android.widget.Chronometer timer = view.findViewById(R.id.rest_countdown);
+    assertTrue(timer.isCountDown());
+    assertTrue(timer.getBase() >= SystemClock.elapsedRealtime() + 89_000);
+  }
+
   @Test public void schedulingImmediatelyStartsForegroundCountdown() {
     RestAlarmController controller = new RestAlarmController(context);
     assertTrue(controller.schedule(90));

@@ -3,6 +3,8 @@
 set -uo pipefail
 gradle :audio-fixture:installDebug :app:connectedDebugAndroidTest --stacktrace
 result=$?
+mkdir -p app/build/device-diagnostics
+adb pull /sdcard/Android/data/com.ahmed.gympro/files/rest-countdown.png app/build/device-diagnostics/rest-countdown.png || true
 if [ "$result" -ne 0 ]; then
   mkdir -p app/build/device-diagnostics
   timeout 20s adb shell dumpsys activity lastanr > app/build/device-diagnostics/last-anr.txt 2>&1 || true

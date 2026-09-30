@@ -138,8 +138,10 @@ public class RestAlarmDeviceTest {
       scenario.onActivity(original::set);
       backgroundToLauncher();
       device.openNotification();
-      assertTrue(device.wait(Until.hasObject(By.text("Rest timer")), 5000));
-      device.findObject(By.text("Rest timer")).click();
+      assertTrue(device.wait(Until.hasObject(By.text("RECOVERY")), 5000));
+      device.waitForIdle();
+      device.takeScreenshot(new java.io.File(context.getExternalFilesDir(null), "rest-countdown.png"));
+      device.findObject(By.text("RECOVERY")).click();
       awaitWeb(scenario, "!!document.querySelector('#workoutNote')");
       scenario.onActivity(activity -> assertSame("Notification must reuse Activity", original.get(), activity));
       assertEquals(saved, eval(scenario, "localStorage.getItem('vantalift-active-workout-v1')"));

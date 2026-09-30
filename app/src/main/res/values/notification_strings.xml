@@ -1,0 +1,4 @@
+<resources>
+    <string name="rest_notification_label">RECOVERY</string>
+    <string name="rest_notification_hint">NEXT SET →</string>
+</resources>
