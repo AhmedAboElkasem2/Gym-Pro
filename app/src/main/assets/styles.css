@@ -329,3 +329,75 @@ html,body{overscroll-behavior-y:none}
 .routine:nth-of-type(4n+4)::before{animation-delay:-5.25s}
 @keyframes routineLedSpin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.routine::before{animation:none}}
+
+
+/* Persistent rest-complete alarm. Native audio continues until OK acknowledges it. */
+#modal[data-variant="rest-alarm"]{
+  align-items:center;
+  padding:24px;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(76,175,80,.18),transparent 36%),
+    rgba(0,0,0,.82);
+}
+#modal[data-variant="rest-alarm"] .sheet{
+  width:min(440px,100%);
+  border-radius:28px;
+  padding:1px;
+  max-height:none;
+  overflow:hidden;
+  background:
+    linear-gradient(135deg,rgba(76,175,80,.95),rgba(55,239,255,.78),rgba(141,114,255,.85));
+  box-shadow:0 22px 54px rgba(0,0,0,.55);
+}
+.rest-alarm-dialog{
+  border-radius:27px;
+  padding:28px 22px 22px;
+  text-align:center;
+  background:
+    radial-gradient(circle at 50% -10%,rgba(76,175,80,.18),transparent 40%),
+    linear-gradient(160deg,#12151b,#090b0f);
+}
+.rest-alarm-badge{
+  display:inline-block;
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid rgba(76,175,80,.28);
+  background:rgba(76,175,80,.09);
+  color:#78df82;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:.15em;
+}
+.rest-alarm-icon{
+  margin:15px auto 10px;
+  width:60px;
+  height:60px;
+  border-radius:20px;
+  display:grid;
+  place-items:center;
+  font-size:30px;
+  background:linear-gradient(145deg,rgba(76,175,80,.18),rgba(55,239,255,.08));
+  border:1px solid rgba(120,223,130,.22);
+}
+.rest-alarm-dialog h2{
+  margin:8px 0 8px;
+  font-size:24px;
+  line-height:1.16;
+  letter-spacing:-.025em;
+}
+.rest-alarm-dialog h2 span{
+  color:#78df82;
+  text-shadow:0 0 20px rgba(76,175,80,.28);
+}
+.rest-alarm-dialog p{
+  margin:0 0 18px;
+  color:#858b96;
+  font-size:12px;
+}
+.rest-alarm-ok{
+  width:100%;
+  background:linear-gradient(135deg,#49b854,#2e8d3a);
+  border-color:rgba(129,255,139,.28);
+  color:#fff;
+  font-size:14px;
+}
