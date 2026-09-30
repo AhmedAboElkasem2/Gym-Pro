@@ -51,5 +51,6 @@ const css=fs.readFileSync('app/src/main/assets/styles.css','utf8');
 if(css.includes('backdrop-filter')) throw new Error('Expensive backdrop-filter must stay disabled');
 if(/background-attachment\s*:\s*fixed/.test(css)) throw new Error('Fixed background must stay disabled');
 if(!css.includes('@keyframes routineLedSpin')) throw new Error('Routine LED effect missing');
-if(!css.includes('@keyframes developerLedSpin')) throw new Error('Developer LED effect missing');
+if(!css.includes('@keyframes triLedSpin')) throw new Error('Shared tri-color LED effect missing');
+if(!css.includes('.smart-hero-surface')) throw new Error('Home hero tri-color LED surface missing');
 console.log('VantaLift bundled runtime smoke test passed');
