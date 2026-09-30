@@ -141,6 +141,7 @@ public class RestAlarmDeviceTest {
       assertTrue(device.wait(Until.hasObject(By.text("RECOVERY")), 5000));
       device.waitForIdle();
       device.takeScreenshot(new java.io.File(context.getExternalFilesDir(null), "rest-countdown.png"));
+      device.executeShellCommand("cp " + new java.io.File(context.getExternalFilesDir(null), "rest-countdown.png").getAbsolutePath() + " /data/local/tmp/rest-countdown.png");
       device.findObject(By.text("RECOVERY")).click();
       awaitWeb(scenario, "!!document.querySelector('#workoutNote')");
       scenario.onActivity(activity -> assertSame("Notification must reuse Activity", original.get(), activity));
@@ -153,6 +154,28 @@ public class RestAlarmDeviceTest {
       assertEquals(saved, eval(scenario, "localStorage.getItem('vantalift-active-workout-v1')"));
       eval(scenario, "document.querySelector('#exit').click();document.querySelector('#exitWorkoutNow').click()");
       assertEquals("null", eval(scenario, "localStorage.getItem('vantalift-active-workout-v1')"));
+    }
+  }
+
+  @Test public void focusNotesAlternativesAndAchievementCardWorkTogether() throws Exception {
+    try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
+      awaitWeb(scenario, "typeof window.VantaLiftRestAlarmActive==='function'");
+      awaitVisualFrame(scenario);
+      eval(scenario, "localStorage.removeItem('vantalift-active-workout-v1');location.reload()");
+      awaitWeb(scenario, "!!document.querySelector('[data-start]')");
+      eval(scenario, "document.querySelector('[data-start]').click()");
+      awaitWeb(scenario, "!!document.querySelector('#focusToggle')");
+      eval(scenario, "var note=document.querySelector('[data-personal-note]');note.value='Seat 4';note.dispatchEvent(new Event('input'));document.querySelector('#focusToggle').click()");
+      assertEquals("1", eval(scenario, "document.querySelectorAll('[data-f=w]').length"));
+      eval(scenario, "document.querySelector('[data-swap]').click()");
+      awaitWeb(scenario, "!!document.querySelector('[data-swap-index]')");
+      eval(scenario, "document.querySelector('[data-swap-index]').click();var w=document.querySelector('[data-f=w]');w.value='25';w.dispatchEvent(new Event('input'));var r=document.querySelector('[data-f=reps]');r.value='8';r.dispatchEvent(new Event('input'));document.querySelector('[data-f=done]').click()");
+      eval(scenario, "document.querySelector('#finish').click();document.querySelector('#workoutCard').click()");
+      awaitWeb(scenario, "!!document.querySelector('#workoutCardCanvas')");
+      assertEquals("1080", eval(scenario, "document.querySelector('#workoutCardCanvas').width"));
+      assertEquals("1920", eval(scenario, "document.querySelector('#workoutCardCanvas').height"));
+      assertEquals("true", eval(scenario, "document.querySelector('#workoutCardCanvas').toDataURL().startsWith('data:image/png;base64,')"));
+      assertEquals("true", eval(scenario, "Object.values(JSON.parse(localStorage.getItem('gympro-v2')).exerciseNotes).includes('Seat 4')"));
     }
   }
 

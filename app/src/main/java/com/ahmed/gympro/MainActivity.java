@@ -94,7 +94,10 @@ public class MainActivity extends Activity {
     if (resultCode != RESULT_OK || data == null || data.getData() == null) return;
 
     try {
-      if (requestCode == BackupFileManager.CREATE_REQUEST) {
+      if (requestCode == WorkoutCardExporter.SAVE_REQUEST) {
+        new WorkoutCardExporter(this).saveTo(data.getData());
+        jsCallback("window.GymProCardSaved&&window.GymProCardSaved()");
+      } else if (requestCode == BackupFileManager.CREATE_REQUEST) {
         backupFileManager.write(data.getData());
         jsCallback("window.GymProBackupSaved&&window.GymProBackupSaved()");
       } else if (requestCode == BackupFileManager.OPEN_REQUEST) {

@@ -54,6 +54,9 @@ final class RestAlarmNotification {
       .setCategory(ringing ? Notification.CATEGORY_ALARM : Notification.CATEGORY_PROGRESS)
       .setPriority(ringing ? Notification.PRIORITY_HIGH : Notification.PRIORITY_DEFAULT);
     if (!ringing) {
+      builder.addAction(new Notification.Action.Builder(null, "+30 sec", action(RestTimerActionReceiver.EXTEND, 9416)).build())
+        .addAction(new Notification.Action.Builder(null, "Skip", action(RestTimerActionReceiver.SKIP, 9417)).build())
+        .addAction(new Notification.Action.Builder(null, "Workout", open).build());
       if (Build.VERSION.SDK_INT >= 24) {
         builder.setWhen(System.currentTimeMillis() + remainingMillis).setShowWhen(true)
           .setUsesChronometer(true).setChronometerCountDown(true);
@@ -67,6 +70,13 @@ final class RestAlarmNotification {
       }
     }
     return builder.build();
+  }
+
+  private PendingIntent action(String action, int code) {
+    Intent intent = new Intent(context, RestTimerActionReceiver.class).setAction(action);
+    intent.putExtra("token", RestAlarmState.pendingToken(context));
+    return PendingIntent.getBroadcast(context, code, intent,
+      PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
   }
 
   private RemoteViews countdownView(int layout, long base) {

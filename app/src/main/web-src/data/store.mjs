@@ -19,7 +19,8 @@ export function migrateData(input) {
       if (best) state.records[key] = { ...best, name: key, key, ts: 0 };
     }
   });
-  state.schema = 3;
+  state.exerciseNotes = state.exerciseNotes && typeof state.exerciseNotes === 'object' && !Array.isArray(state.exerciseNotes) ? state.exerciseNotes : {};
+  state.schema = 4;
   return state;
 }
 

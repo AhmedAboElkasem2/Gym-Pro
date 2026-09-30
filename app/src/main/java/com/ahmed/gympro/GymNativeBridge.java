@@ -52,6 +52,14 @@ final class GymNativeBridge {
   }
 
   @JavascriptInterface
+  public void exportWorkoutCard(String dataUrl, boolean share) {
+    activity.runOnUiThread(() -> {
+      try { new WorkoutCardExporter(activity).export(dataUrl, share); }
+      catch (Exception error) { errorReporter.report("Could not export workout card"); }
+    });
+  }
+
+  @JavascriptInterface
   public void saveBackupFile(String json) {
     activity.runOnUiThread(() -> {
       try {

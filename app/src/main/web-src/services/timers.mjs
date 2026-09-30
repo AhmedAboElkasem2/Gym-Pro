@@ -102,6 +102,15 @@ function restCompleted() {
 }
 
 export function tickRest() {
+  if (window.GymNative?.getRestRemainingMillis) {
+    const remaining = Number(window.GymNative.getRestRemainingMillis());
+    if (remaining > 0) restDeadline = Date.now() + remaining;
+    else if (restDeadline && !window.GymNative.isRestAlarmActive?.()) {
+      // A notification Skip must clear the web timer without playing a completion alert.
+      stopRestTimer(true, false);
+      return;
+    }
+  }
   if (!restDeadline) return;
   restSeconds = Math.max(0, Math.ceil((restDeadline - Date.now()) / 1000));
   paintRestTimer();
@@ -153,13 +162,13 @@ export function restoreRestTimer() {
     if (restTimerId) clearInterval(restTimerId);
     restTimerId = setInterval(tickRest, 500);
     paintRestTimer();
-  } else if (restDeadline) {
-    restDeadline = 0;
-    localStorage.removeItem(REST_DEADLINE_KEY);
+  } else {
+    stopRestTimer(true, false);
   }
 }
 
 export function resumeTimers() {
+  restoreRestTimer();
   tickRest();
   paintRestTimer();
   paintWorkoutClock();

@@ -1,8 +1,5 @@
+import { loggedChoices } from './workout-tools.mjs';
 import { bestSet, isBetterSet } from './training.mjs';
-
-function selectedChoice(exercise, workout) {
-  return exercise.choices.find((choice) => choice.key === workout.choiceKeys[exercise.id]) || exercise.choices[0];
-}
 
 export function completeWorkout(state, workout, { now = Date.now(), idFactory }) {
   const sessionId = idFactory();
@@ -11,9 +8,13 @@ export function completeWorkout(state, workout, { now = Date.now(), idFactory })
   let completedSets = 0;
   let volume = 0;
 
-  workout.r.exercises.forEach((exercise) => {
-    const choice = selectedChoice(exercise, workout);
-    const rows = workout.rows[exercise.id];
+  const byKey = new Map();
+  workout.r.exercises.flatMap(exercise => loggedChoices(workout, exercise)).forEach(({ choice, rows }) => {
+    const entry = byKey.get(choice.key) || { choice, rows: [] };
+    entry.rows.push(...rows);
+    byKey.set(choice.key, entry);
+  });
+  byKey.forEach(({ choice, rows }) => {
     const completed = rows
       .filter((set) => set.done)
       .map((set) => ({ w: +set.w || 0, reps: +set.reps || 0 }));
@@ -44,7 +45,7 @@ export function completeWorkout(state, workout, { now = Date.now(), idFactory })
       totalReps: completed.reduce((sum, set) => sum + set.reps, 0)
     };
 
-    state.exerciseLog[choice.key] = [entry, ...(state.exerciseLog[choice.key] || [])].slice(0, 20);
+    state.exerciseLog[choice.key] = [entry, ...(state.exerciseLog[choice.key] || [])].slice(0, 100);
     details.push(entry);
 
     if (best && isBetterSet(best, previousRecord)) {

@@ -27,8 +27,11 @@ test('store preserves the gympro-v2 compatibility contract and state identity', 
     records: {}
   });
   assert.equal(store.state,identity);
-  assert.equal(store.state.schema,3);
+  assert.equal(store.state.schema,4);
 
+  assert.deepEqual(store.state.exerciseNotes, {});
+  store.state.exerciseNotes.press = 'Seat 4';
   store.save();
+  assert.equal(JSON.parse(storage.getItem(store.STORAGE_KEY)).exerciseNotes.press, 'Seat 4');
   assert.ok(storage.values.has('gympro-v2'));
 });

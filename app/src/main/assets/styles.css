@@ -401,3 +401,17 @@ html,body{overscroll-behavior-y:none}
   color:#fff;
   font-size:14px;
 }
+
+/* Workout tools: contained components, shared theme and touch targets. */
+.focus-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:16px 0;flex-wrap:wrap}
+.focus-toolbar span{font-size:12px;color:#a6aab5}.focus-toolbar button:disabled{opacity:.35}
+.focus-card{border-color:#e53935!important}.focus-card .setrow:not(.labels){min-height:100px}
+.focus-card .setrow .input{font-size:25px;min-height:64px}.focus-card .check{width:38px;height:38px}
+.exercise-note-label{display:block;color:#9299a7;font-size:10px;letter-spacing:.08em;margin:14px 0}
+.personal-note{display:block;min-height:60px;margin-top:6px;resize:vertical;letter-spacing:normal;font-size:13px}
+.swap-results{max-height:48vh;overflow:auto;margin:12px 0}.swap-option{display:flex;width:100%;flex-direction:column;text-align:left;gap:6px;cursor:pointer}
+.trend-range{max-width:120px;padding:8px;font-size:12px}.trend-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 0}
+.trend-summary strong{font-size:26px}.trend-summary small{font-size:12px;color:#a7aebb}.trend-summary span{font-size:11px}
+.trend-chart{display:block;width:100%;height:auto;margin-top:12px;overflow:visible}.trend-point{cursor:pointer}.trend-point:focus{outline:none;stroke:#fff;stroke-width:4}
+.trend-detail{text-align:center;font-size:12px;min-height:20px}.workout-share-preview{display:block;width:min(100%,270px);height:auto;margin:16px auto;border-radius:16px;border:1px solid #363a46}
+.workout-card .exhead>.row{flex-wrap:wrap;justify-content:flex-end}.history .history-copy{min-width:0;flex:1}.history .btn{flex-shrink:0}
