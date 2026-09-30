@@ -62,3 +62,10 @@ if(!settingsView.includes('developer-card tri-led-frame')) throw new Error('Deve
 if(!styles.includes('.tri-led-frame::before')||!styles.includes('@keyframes triLedSpin')) throw new Error('Shared tri-color LED utility missing');
 if(styles.includes('@keyframes developerLedSpin')) throw new Error('Legacy duplicated developer LED animation remains');
 if(/\.tri-led-frame::before[\s\S]*?(?:filter|backdrop-filter)\s*:/.test(styles)) throw new Error('Shared tri-color LED must remain filter-free');
+
+const restAlarmScheduler=fs.readFileSync(path.join(javaRoot,'RestAlarmScheduler.java'),'utf8');
+const restAlarmReceiver=fs.readFileSync(path.join(javaRoot,'RestAlarmReceiver.java'),'utf8');
+if(!restAlarmScheduler.includes('setAlarmClock')) throw new Error('Rest alarm must use AlarmClock scheduling for lock-screen reliability');
+if(!restAlarmReceiver.includes('AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK')) throw new Error('Rest alarm must request transient audio focus');
+if(!restAlarmReceiver.includes('setLooping(true)')) throw new Error('Rest alarm sound must loop for the full alert window');
+if(!restAlarmReceiver.includes('vibrate(VibrationEffect.createWaveform(pattern, 0))')) throw new Error('Rest vibration must repeat during the alert window');
