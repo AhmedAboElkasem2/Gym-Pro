@@ -31,7 +31,7 @@ export function homeView() {
   const pr = latestPr(state.records);
   const streak = workoutStreak(state.history);
 
-  dom.app.innerHTML = `<section class="hero smart-hero"><small class="mut">NEXT WORKOUT</small><h2>${next ? escapeHtml(next.name) : 'Build your routine'}</h2><p class="mut">${last ? `Last session: ${escapeHtml(last.name)} · ${last.mins || 0} min` : 'Your A×P program is ready.'}</p>${next ? `<button class="btn primary" data-start="${next.id}">Start ${escapeHtml(next.name)}</button>` : ''}</section>
+  dom.app.innerHTML = `<section class="hero smart-hero tri-led-frame"><div class="tri-led-surface smart-hero-surface"><small class="mut">NEXT WORKOUT</small><h2>${next ? escapeHtml(next.name) : 'Build your routine'}</h2><p class="mut">${last ? `Last session: ${escapeHtml(last.name)} · ${last.mins || 0} min` : 'Your A×P program is ready.'}</p>${next ? `<button class="btn primary" data-start="${next.id}">Start ${escapeHtml(next.name)}</button>` : ''}</div></section>
   <div class="stats"><div class="stat"><b>${week}</b><span>WORKOUTS / 7D</span></div><div class="stat"><b>${streak}</b><span>DAY STREAK</span></div><div class="stat"><b>${recordCount(state.records)}</b><span>PRs</span></div></div>
   ${pr ? `<button class="card smart-pr" data-open-exercise="${escapeHtml(pr.key || '')}"><span>LAST PR 🔥</span><b>${escapeHtml(pr.name || pr.key || 'Exercise')}</b><small>${pr.w} ${state.settings.unit} × ${pr.reps}</small></button>` : ''}
   <div class="section"><h3>Your routine</h3><span>${total} EXERCISE GROUPS</span></div>${state.routines.map(routineCardHtml).join('')}`;
