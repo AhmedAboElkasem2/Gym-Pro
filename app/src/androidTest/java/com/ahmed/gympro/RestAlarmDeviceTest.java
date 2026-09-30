@@ -119,8 +119,8 @@ public class RestAlarmDeviceTest {
     try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
       awaitWeb(scenario, "typeof window.VantaLiftRestAlarmActive==='function'");
       awaitVisualFrame(scenario);
-      eval(scenario, "localStorage.removeItem('vantalift-active-workout-v1');location.reload()");
-      awaitWeb(scenario, "!!document.querySelector('[data-start]')");
+      eval(scenario, "localStorage.removeItem('vantalift-active-workout-v1');window.__vantaReloading=true;location.reload()");
+      awaitWeb(scenario, "!window.__vantaReloading && !!document.querySelector('[data-start]')");
       eval(scenario, "document.querySelector('[data-start]').click()");
       awaitWeb(scenario, "!!document.querySelector('#workoutNote')");
       eval(scenario, "var w=document.querySelector('[data-f=w]');w.value='67.5';w.dispatchEvent(new Event('input'));var r=document.querySelector('[data-f=reps]');r.value='9';r.dispatchEvent(new Event('input'));var n=document.querySelector('#workoutNote');n.value='Saved workout note';n.dispatchEvent(new Event('input'));document.querySelector('[data-f=done]').click()");
@@ -161,8 +161,8 @@ public class RestAlarmDeviceTest {
     try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
       awaitWeb(scenario, "typeof window.VantaLiftRestAlarmActive==='function'");
       awaitVisualFrame(scenario);
-      eval(scenario, "localStorage.removeItem('vantalift-active-workout-v1');location.reload()");
-      awaitWeb(scenario, "!!document.querySelector('[data-start]')");
+      eval(scenario, "localStorage.removeItem('vantalift-active-workout-v1');window.__vantaReloading=true;location.reload()");
+      awaitWeb(scenario, "!window.__vantaReloading && !!document.querySelector('[data-start]')");
       eval(scenario, "document.querySelector('[data-start]').click()");
       awaitWeb(scenario, "!!document.querySelector('#focusToggle')");
       eval(scenario, "var note=document.querySelector('[data-personal-note]');note.value='Seat 4';note.dispatchEvent(new Event('input'));document.querySelector('#focusToggle').click()");
