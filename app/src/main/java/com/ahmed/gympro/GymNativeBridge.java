@@ -32,6 +32,11 @@ final class GymNativeBridge {
   }
 
   @JavascriptInterface
+  public long getRestRemainingMillis() {
+    return RestAlarmState.remainingMillis(activity);
+  }
+
+  @JavascriptInterface
   public void cancelRestAlarm() {
     restAlarmController.cancel();
   }

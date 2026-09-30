@@ -1,0 +1,9 @@
+// Emulator-only competing audio app. Never included in the user APK.
+plugins { id 'com.android.application' }
+android {
+  namespace 'com.ahmed.gympro.testmusic'
+  compileSdk 35
+  defaultConfig { applicationId 'com.ahmed.gympro.testmusic'; minSdk 26; targetSdk 35; versionCode 1; versionName '1' }
+  sourceSets.main.res.srcDirs = ['../app/src/main/res']
+  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}

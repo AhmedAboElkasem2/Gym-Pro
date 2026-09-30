@@ -64,12 +64,12 @@ jobs:
       - name: Rename APK
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/VantaLift-v3.1.4.apk
+          cp app/build/outputs/apk/debug/app-debug.apk dist/VantaLift-v3.1.5.apk
 
       - uses: actions/upload-artifact@v4
         with:
           name: VantaLift-APK-candidate
-          path: dist/VantaLift-v3.1.4.apk
+          path: dist/VantaLift-v3.1.5.apk
 
       - uses: actions/upload-artifact@v4
         with:
@@ -113,7 +113,7 @@ jobs:
           profile: pixel_2
           disable-animations: true
           emulator-boot-timeout: 300
-          script: gradle :app:connectedDebugAndroidTest --stacktrace
+          script: gradle :audio-fixture:installDebug :app:connectedDebugAndroidTest --stacktrace
       - uses: actions/upload-artifact@v4
         if: always()
         with:

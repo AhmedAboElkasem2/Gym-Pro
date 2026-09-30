@@ -135,7 +135,13 @@ public class MainActivity extends Activity {
       "if(window.GymProResume){window.GymProResume();}",
       null
     );
-    if (restAlarmController.isActive()) RestAlarmService.start(this);
+    if (restAlarmController.isActive() || RestAlarmState.hasPending(this)) RestAlarmService.start(this);
+    dispatchRestAlarmState();
+  }
+
+  @Override protected void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+    setIntent(intent);
     dispatchRestAlarmState();
   }
 

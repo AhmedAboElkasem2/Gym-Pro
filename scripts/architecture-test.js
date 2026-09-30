@@ -73,7 +73,13 @@ if(!restAlarmAudio.includes('AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK')) throw new Err
 if(!restAlarmAudio.includes('setLooping(true)')) throw new Error('Persistent rest alarm sound must loop until acknowledged');
 if(!restAlarmAudio.includes('VibrationEffect.createWaveform(pattern, 0)')) throw new Error('Persistent rest vibration must repeat');
 if(!restAlarmService.includes('START_STICKY')) throw new Error('Persistent rest alarm service must survive process pressure');
-if(!manifest.includes('android:foregroundServiceType="mediaPlayback"')) throw new Error('Rest alarm foreground service type is missing');
+if(!manifest.includes('android:foregroundServiceType="systemExempted|mediaPlayback"')) throw new Error('Rest alarm foreground service type is missing');
 if(!manifest.includes('FOREGROUND_SERVICE_MEDIA_PLAYBACK')) throw new Error('Rest alarm media playback foreground-service permission is missing');
 if(!restAlarmFeature.includes('The Rest Time Is Over, Get up and BE HULK')) throw new Error('Rest-complete Hulk message is missing');
 if(!restAlarmFeature.includes('persistent: true')) throw new Error('Rest-complete dialog must be non-dismissible until OK');
+
+const notification=fs.readFileSync(path.join(javaRoot,'RestAlarmNotification.java'),'utf8');
+if(!notification.includes('setChronometerCountDown(true)')) throw new Error('Countdown must use the system chronometer');
+if(!notification.includes('FLAG_ACTIVITY_SINGLE_TOP') || !manifest.includes('android:launchMode="singleTop"')) throw new Error('Notification must reuse the workout Activity');
+if(!restAlarmService.includes('FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED')) throw new Error('Exact rest timer must have a valid countdown foreground service type');
+if(!fs.readFileSync(path.join(webRoot,'main.mjs'),'utf8').includes('nav(restoreWorkout())')) throw new Error('Startup must restore an unfinished workout');

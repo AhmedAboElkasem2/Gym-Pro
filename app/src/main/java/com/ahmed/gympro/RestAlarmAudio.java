@@ -27,6 +27,7 @@ final class RestAlarmAudio implements AutoCloseable {
   private AudioFocusRequest focusRequest;
   private MediaPlayer player;
   private Vibrator vibrator;
+  private PowerManager.WakeLock startupWakeLock;
   private boolean started;
   private boolean closed;
 
@@ -44,11 +45,16 @@ final class RestAlarmAudio implements AutoCloseable {
       if (Build.VERSION.SDK_INT >= 26) vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0));
       else vibrator.vibrate(pattern, 0);
     }
+    // MediaPlayer's wake lock starts only after playback; protect focus/setup retries too.
+    PowerManager power = context.getSystemService(PowerManager.class);
+    startupWakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "vantalift:rest-alarm-startup");
+    startupWakeLock.setReferenceCounted(false);
     requestFocus();
   }
 
   private void requestFocus() {
     if (closed || manager == null) return;
+    startupWakeLock.acquire(10_000);
     int result;
     if (Build.VERSION.SDK_INT >= 26) {
       focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
@@ -60,6 +66,7 @@ final class RestAlarmAudio implements AutoCloseable {
       result = manager.requestAudioFocus(focusListener, AudioManager.STREAM_ALARM,
         AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
     }
+    Log.i("RestAlarm", "Audio focus result=" + result);
     if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) play();
     else if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED) {
       // For example, a call can temporarily deny focus. Keep the pending alarm/vibration.
@@ -105,6 +112,8 @@ final class RestAlarmAudio implements AutoCloseable {
       });
       player.prepare();
       player.start();
+      if (startupWakeLock != null && startupWakeLock.isHeld()) startupWakeLock.release();
+      Log.i("RestAlarm", "Looping alarm playback started");
       return true;
     } catch (Exception error) {
       Log.w("RestAlarm", "Alarm sound unavailable; trying bundled fallback", error);
@@ -123,6 +132,7 @@ final class RestAlarmAudio implements AutoCloseable {
   @Override public void close() {
     closed = true;
     handler.removeCallbacksAndMessages(null);
+    if (startupWakeLock != null && startupWakeLock.isHeld()) startupWakeLock.release();
     if (vibrator != null) vibrator.cancel();
     releasePlayer();
     if (manager != null) {

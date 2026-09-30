@@ -29,8 +29,7 @@ final class RestAlarmScheduler {
   }
 
   private PendingIntent showIntent() {
-    Intent intent = new Intent(context, MainActivity.class);
-    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    Intent intent = RestAlarmNotification.openWorkout(context);
     int flags = PendingIntent.FLAG_UPDATE_CURRENT;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       flags |= PendingIntent.FLAG_IMMUTABLE;
@@ -47,7 +46,7 @@ final class RestAlarmScheduler {
       cancel();
       long triggerAt = System.currentTimeMillis() + Math.max(1, seconds) * 1000L;
       String token = UUID.randomUUID().toString();
-      RestAlarmState.pending(context, token);
+      RestAlarmState.pending(context, token, Math.max(1, seconds) * 1000L);
       PendingIntent operation = alarmIntent(token);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
