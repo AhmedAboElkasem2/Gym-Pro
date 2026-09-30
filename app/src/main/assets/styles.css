@@ -143,12 +143,23 @@ html,body{overscroll-behavior-y:none}
 }
 .history-delete:active{background:rgba(240,68,68,.16);transform:scale(.97)}
 .history-delete svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.developer-card{
-  position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;gap:14px;margin-top:18px;padding:17px;
-  border:1px solid transparent;border-radius:20px;background:#0d0f14;contain:paint;
+/* Shared tri-color LED frame: Home hero + developer card. Transform-only animation keeps it GPU-friendly. */
+.tri-led-frame{
+  --tri-led-radius:20px;
+  --tri-led-surface:#0d0f14;
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  padding:1px;
+  border:0;
+  background:#0d0f14;
 }
-.developer-card::before{
-  content:"";position:absolute;inset:-180%;z-index:0;pointer-events:none;
+.tri-led-frame::before{
+  content:"";
+  position:absolute;
+  inset:-180%;
+  z-index:0;
+  pointer-events:none;
   background:conic-gradient(
     from 0deg,
     transparent 0deg 250deg,
@@ -159,15 +170,33 @@ html,body{overscroll-behavior-y:none}
     rgba(55,239,255,.9) 339deg,
     transparent 360deg
   );
-  transform:rotate(0deg);transform-origin:center;will-change:transform;
-  animation:developerLedSpin 6.4s linear infinite;
+  transform:rotate(0deg);
+  transform-origin:center;
+  will-change:transform;
+  animation:triLedSpin 6.4s linear infinite;
 }
-.developer-card::after{
-  content:"";position:absolute;inset:1px;z-index:1;pointer-events:none;border-radius:19px;
-  background:linear-gradient(135deg,#11141a,#0d1016 55%,#10121a);
+.tri-led-surface{
+  position:relative;
+  z-index:1;
+  border-radius:calc(var(--tri-led-radius) - 1px);
+  background:var(--tri-led-surface);
 }
-.developer-card>*{position:relative;z-index:2}
-@keyframes developerLedSpin{to{transform:rotate(360deg)}}
+@keyframes triLedSpin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.tri-led-frame::before{animation:none}}
+
+.developer-card{
+  --tri-led-radius:20px;
+  --tri-led-surface:linear-gradient(135deg,#11141a,#0d1016 55%,#10121a);
+  margin-top:18px;
+  border-radius:20px;
+  contain:paint;
+}
+.developer-card-surface{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:16px;
+}
 .developer-mark{
   flex:0 0 54px;width:54px;height:54px;border-radius:16px;display:grid;place-items:center;
   border:1px solid rgba(255,255,255,.08);background:linear-gradient(145deg,#171a21,#0d1015);
@@ -178,9 +207,19 @@ html,body{overscroll-behavior-y:none}
 .developer-card span{display:block;color:#8e919b;font-size:9px;font-weight:900;letter-spacing:.18em}
 .developer-card strong{display:block;margin-top:3px;font-size:17px}
 .developer-card small{display:block;margin-top:3px;color:#737784;font-size:10px}
-@media(prefers-reduced-motion:reduce){.developer-card::before{animation:none}}
 
 /* VantaLift 2.0 */
+.smart-hero{
+  --tri-led-radius:28px;
+  --tri-led-surface:
+    radial-gradient(circle at 88% 5%,rgba(240,68,68,.24),transparent 34%),
+    radial-gradient(circle at 8% 110%,rgba(141,114,255,.13),transparent 34%),
+    linear-gradient(145deg,rgba(24,26,33,.97),rgba(12,14,19,.985));
+  padding:1px;
+  border:0;
+  border-radius:28px;
+}
+.smart-hero-surface{padding:24px;overflow:hidden}
 .smart-hero h2{margin-bottom:8px}
 .smart-pr{width:100%;display:flex;flex-direction:column;align-items:flex-start;text-align:left;margin:12px 0;border-color:rgba(240,68,68,.2)}
 .smart-pr span{font-size:9px;color:#ff7770;font-weight:900;letter-spacing:.14em}
