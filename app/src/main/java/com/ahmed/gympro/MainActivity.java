@@ -13,7 +13,7 @@ import org.json.JSONObject;
 
 public class MainActivity extends Activity {
   private WebView webView;
-  private RestAlarmScheduler restAlarmScheduler;
+  private RestAlarmController restAlarmController;
   private BackupFileManager backupFileManager;
 
   @Override
@@ -23,17 +23,17 @@ public class MainActivity extends Activity {
     webView = new WebView(this);
     configureWebView(webView);
 
-    restAlarmScheduler = new RestAlarmScheduler(this);
+    restAlarmController = new RestAlarmController(this);
     backupFileManager = new BackupFileManager(this);
 
     GymNativeBridge bridge = new GymNativeBridge(
       this,
-      restAlarmScheduler,
+      restAlarmController,
       backupFileManager,
       this::reportBackupError
     );
     webView.addJavascriptInterface(bridge, "GymNative");
-    webView.setWebViewClient(new VantaWebViewClient(this, this::applyWindowInsets));
+    webView.setWebViewClient(new VantaWebViewClient(this, this::onWebPageReady));
 
     setContentView(webView);
     webView.loadUrl("file:///android_asset/index.html");
@@ -56,8 +56,20 @@ public class MainActivity extends Activity {
     }
   }
 
+  private void onWebPageReady() {
+    applyWindowInsets();
+    dispatchRestAlarmState();
+  }
+
   private void applyWindowInsets() {
     WindowInsetsHelper.applyStatusBarInset(this, webView);
+  }
+
+  private void dispatchRestAlarmState() {
+    if (restAlarmController == null || !restAlarmController.isActive()) return;
+    jsCallback(
+      "window.VantaLiftRestAlarmActive&&window.VantaLiftRestAlarmActive()"
+    );
   }
 
   private void jsCallback(String script) {
@@ -108,6 +120,7 @@ public class MainActivity extends Activity {
       "if(window.GymProResume){window.GymProResume();}",
       null
     );
+    dispatchRestAlarmState();
   }
 
   private void exitFromSystemBack() {
