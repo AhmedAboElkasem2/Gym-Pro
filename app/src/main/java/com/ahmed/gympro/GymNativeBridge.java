@@ -9,30 +9,40 @@ final class GymNativeBridge {
   }
 
   private final Activity activity;
-  private final RestAlarmScheduler restAlarmScheduler;
+  private final RestAlarmController restAlarmController;
   private final BackupFileManager backupFileManager;
   private final ErrorReporter errorReporter;
 
   GymNativeBridge(
     Activity activity,
-    RestAlarmScheduler restAlarmScheduler,
+    RestAlarmController restAlarmController,
     BackupFileManager backupFileManager,
     ErrorReporter errorReporter
   ) {
     this.activity = activity;
-    this.restAlarmScheduler = restAlarmScheduler;
+    this.restAlarmController = restAlarmController;
     this.backupFileManager = backupFileManager;
     this.errorReporter = errorReporter;
   }
 
   @JavascriptInterface
   public boolean startRestAlarm(int seconds) {
-    return restAlarmScheduler.schedule(seconds);
+    return restAlarmController.schedule(seconds);
   }
 
   @JavascriptInterface
   public void cancelRestAlarm() {
-    restAlarmScheduler.cancel();
+    restAlarmController.cancel();
+  }
+
+  @JavascriptInterface
+  public void acknowledgeRestAlarm() {
+    restAlarmController.acknowledge();
+  }
+
+  @JavascriptInterface
+  public boolean isRestAlarmActive() {
+    return restAlarmController.isActive();
   }
 
   @JavascriptInterface
