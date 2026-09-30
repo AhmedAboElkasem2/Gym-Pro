@@ -8,3 +8,5 @@
 .cxx
 
 /app/src/main/assets/app.bundle.js
+
+/audio-fixture/build

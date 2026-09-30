@@ -1,3 +1,4 @@
+import { persistWorkout } from '../services/workout-recovery.mjs';
 import { $, $$, dom } from './dom.mjs';
 import { session } from './session.mjs';
 import { closeModal, openModal, toast } from '../ui/primitives.mjs';
@@ -57,6 +58,7 @@ export function showWorkoutExitDialog() {
     closeModal();
     stopWorkoutClock();
     session.workout = null;
+    persistWorkout();
     stopRestTimer();
     nav('routines');
   };

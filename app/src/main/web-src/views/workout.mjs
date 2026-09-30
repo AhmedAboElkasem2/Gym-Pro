@@ -1,3 +1,4 @@
+import { persistWorkout } from '../services/workout-recovery.mjs';
 import { $, $$, dom } from '../core/dom.mjs';
 import { session } from '../core/session.mjs';
 import { clone, escapeHtml, uid } from '../core/utils.mjs';
@@ -37,6 +38,7 @@ export function startWorkout(id) {
 
   stopWorkoutClock();
   session.workout = {
+    id: uid(),
     r: routine,
     start: Date.now(),
     choiceKeys: {},
@@ -57,6 +59,7 @@ export function startWorkout(id) {
 export function workoutView() {
   const routine = session.workout?.r;
   if (!routine) return nav('home');
+  persistWorkout();
   dom.title.textContent = routine.name;
 
   dom.app.innerHTML = `<div class="worktop"><button class="btn" id="exit">← Exit</button><div class="work-metrics"><div class="elapsed" id="workoutClock"><span>WORKOUT</span><b>00:00:00</b></div><button class="timer" id="restBtn">Rest ${formatRest(getRestSeconds())}</button></div></div>
@@ -81,7 +84,7 @@ export function workoutView() {
   $('#exit').onclick = showWorkoutExitDialog;
   $('#finish').onclick = finishWorkout;
   $('#restBtn').onclick = () => getRestSeconds() ? stopRestTimer() : startRestTimer();
-  $('#workoutNote').oninput = (event) => { session.workout.note = event.target.value; };
+  $('#workoutNote').oninput = (event) => { session.workout.note = event.target.value; persistWorkout(); };
 
   $$('[data-work-stats]').forEach((button) => {
     button.onclick = () => openExercise(button.dataset.workStats, 'workout');
@@ -92,17 +95,22 @@ export function workoutView() {
       const field = element.dataset.f;
       if (field === 'done') {
         set.done = element.checked;
+        persistWorkout();
         if (element.checked) startRestTimer();
       } else {
         set[field] = element.value;
+        persistWorkout();
       }
     };
   });
+  $$('[data-f]:not([data-f=done])').forEach(element => { element.oninput = element.onchange; });
   $$('[data-wf]').forEach((element) => {
     element.onchange = () => {
       session.workout.warm[element.dataset.ex][+element.dataset.i][element.dataset.wf] = element.value;
+      persistWorkout();
     };
   });
+  $$('[data-wf]').forEach(element => { element.oninput = element.onchange; });
   $$('[data-addwarm]').forEach((button) => {
     button.onclick = () => {
       const exercise = routine.exercises.find((item) => item.id === button.dataset.addwarm);
@@ -135,11 +143,12 @@ export function workoutView() {
 
 export function finishWorkout() {
   if (!session.workout) return;
-  const historyEntry = completeWorkout(state, session.workout, { idFactory: uid });
+  const historyEntry = completeWorkout(state, session.workout, { idFactory: () => session.workout.id });
   session.summary = clone(historyEntry);
   save(true);
   stopWorkoutClock();
   session.workout = null;
+  persistWorkout();
   stopRestTimer();
   nav('summary');
 }

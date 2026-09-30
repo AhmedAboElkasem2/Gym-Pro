@@ -14,13 +14,22 @@ final class RestAlarmController {
   boolean schedule(int seconds) {
     synchronized (RestAlarmState.class) {
       if (isActive()) return false;
-      return scheduler.schedule(seconds);
+      if (!scheduler.schedule(seconds)) return false;
+      try {
+        RestAlarmService.start(context);
+        return true;
+      } catch (RuntimeException error) {
+        scheduler.cancel();
+        android.util.Log.e("RestAlarm", "Countdown service could not start", error);
+        return false;
+      }
     }
   }
 
   void cancel() {
     synchronized (RestAlarmState.class) {
       scheduler.cancel();
+      if (!isActive()) RestAlarmService.stop(context);
     }
   }
 

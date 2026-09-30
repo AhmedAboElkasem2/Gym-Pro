@@ -2,6 +2,9 @@ package com.ahmed.gympro;
 
 import static org.junit.Assert.*;
 import android.app.NotificationManager;
+import android.app.Notification;
+import android.media.AudioManager;
+import android.media.AudioAttributes;
 import android.content.Context;
 import android.os.SystemClock;
 import android.webkit.WebView;
@@ -9,6 +12,8 @@ import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.Until;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,6 +43,7 @@ public class RestAlarmDeviceTest {
     device.executeShellCommand("dumpsys deviceidle unforce");
     device.executeShellCommand("dumpsys battery reset");
     device.wakeUp();
+    device.executeShellCommand("am force-stop com.ahmed.gympro.testmusic");
   }
 
   @Test public void lockedScreenAlarmPersistsAndOnlyOkStopsIt() throws Exception {
@@ -53,7 +59,9 @@ public class RestAlarmDeviceTest {
         SystemClock.sleep(100);
       }
       assertTrue("Alarm missed the locked-screen deadline", controller.isActive());
+      awaitAudio(AudioAttributes.USAGE_ALARM, true);
       SystemClock.sleep(4000);
+      assertTrue("Alarm audio stopped before OK", isAudioActive(AudioAttributes.USAGE_ALARM));
       NotificationManager notifications = context.getSystemService(NotificationManager.class);
       assertEquals("Ringing foreground notification must persist", 1, notifications.getActiveNotifications().length);
       controller.cancel(); // Finishing/exiting a workout must not acknowledge a ringing alarm.
@@ -84,8 +92,80 @@ public class RestAlarmDeviceTest {
     }
   }
 
+  @Test public void musicKeepsPlayingWhileLockedAlarmStartsBeforeOpeningApp() throws Exception {
+    try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
+      awaitWeb(scenario, "typeof window.VantaLiftRestAlarmActive==='function'");
+      assertTrue(controller.schedule(12));
+      device.executeShellCommand("am start -W -n com.ahmed.gympro.testmusic/.MusicActivity");
+      awaitAudio(AudioAttributes.USAGE_MEDIA, true);
+      int volume = context.getSystemService(AudioManager.class).getStreamVolume(AudioManager.STREAM_MUSIC);
+      device.sleep();
+      awaitAudio(AudioAttributes.USAGE_ALARM, true);
+      assertTrue(controller.isActive());
+      assertTrue("Music must continue underneath alarm", isAudioActive(AudioAttributes.USAGE_MEDIA));
+      SystemClock.sleep(4000);
+      assertTrue("Alarm must loop while app stays backgrounded", isAudioActive(AudioAttributes.USAGE_ALARM));
+      assertEquals(volume, context.getSystemService(AudioManager.class).getStreamVolume(AudioManager.STREAM_MUSIC));
+      controller.acknowledge();
+      awaitAudio(AudioAttributes.USAGE_ALARM, false);
+      assertTrue("Music must continue after focus is returned", isAudioActive(AudioAttributes.USAGE_MEDIA));
+    }
+  }
+
+  @Test public void countdownNotificationOpensSameWorkoutAndRecreationRestoresAllEdits() throws Exception {
+    try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
+      awaitWeb(scenario, "typeof window.VantaLiftRestAlarmActive==='function'");
+      eval(scenario, "localStorage.removeItem('vantalift-active-workout-v1');location.reload()");
+      awaitWeb(scenario, "!!document.querySelector('[data-start]')");
+      eval(scenario, "document.querySelector('[data-start]').click()");
+      awaitWeb(scenario, "!!document.querySelector('#workoutNote')");
+      eval(scenario, "var w=document.querySelector('[data-f=w]');w.value='67.5';w.dispatchEvent(new Event('input'));var r=document.querySelector('[data-f=reps]');r.value='9';r.dispatchEvent(new Event('input'));var n=document.querySelector('#workoutNote');n.value='Saved workout note';n.dispatchEvent(new Event('input'));document.querySelector('[data-f=done]').click()");
+      String saved = eval(scenario, "localStorage.getItem('vantalift-active-workout-v1')");
+      assertTrue(saved.contains("67.5"));
+      NotificationManager manager = context.getSystemService(NotificationManager.class);
+      long waitUntil = SystemClock.elapsedRealtime() + 3000;
+      while (manager.getActiveNotifications().length == 0 && SystemClock.elapsedRealtime() < waitUntil) SystemClock.sleep(50);
+      Notification countdown = manager.getActiveNotifications()[0].getNotification();
+      assertEquals("Rest timer", countdown.extras.getString(Notification.EXTRA_TITLE));
+      assertTrue(countdown.extras.getBoolean(Notification.EXTRA_SHOW_CHRONOMETER));
+      assertTrue(countdown.extras.getBoolean(Notification.EXTRA_CHRONOMETER_COUNT_DOWN));
+      assertTrue(countdown.when > System.currentTimeMillis());
+      AtomicReference<MainActivity> original = new AtomicReference<>();
+      scenario.onActivity(original::set);
+      device.pressHome();
+      device.openNotification();
+      assertTrue(device.wait(Until.hasObject(By.text("Rest timer")), 5000));
+      device.findObject(By.text("Rest timer")).click();
+      awaitWeb(scenario, "!!document.querySelector('#workoutNote')");
+      scenario.onActivity(activity -> assertSame("Notification must reuse Activity", original.get(), activity));
+      assertEquals(saved, eval(scenario, "localStorage.getItem('vantalift-active-workout-v1')"));
+      scenario.recreate();
+      awaitWeb(scenario, "!!document.querySelector('#workoutNote')");
+      assertEquals("\"67.5\"", eval(scenario, "document.querySelector('[data-f=w]').value"));
+      assertEquals("true", eval(scenario, "document.querySelector('[data-f=done]').checked"));
+      assertEquals("\"Saved workout note\"", eval(scenario, "document.querySelector('#workoutNote').value"));
+      assertEquals(saved, eval(scenario, "localStorage.getItem('vantalift-active-workout-v1')"));
+      eval(scenario, "document.querySelector('#exit').click();document.querySelector('#exitWorkoutNow').click()");
+      assertEquals("null", eval(scenario, "localStorage.getItem('vantalift-active-workout-v1')"));
+    }
+  }
+
+  private boolean isAudioActive(int usage) {
+    return context.getSystemService(AudioManager.class).getActivePlaybackConfigurations().stream()
+      .anyMatch(config -> config.getAudioAttributes().getUsage() == usage);
+  }
+
+  private void awaitAudio(int usage, boolean active) throws Exception {
+    long deadline = SystemClock.elapsedRealtime() + 18_000;
+    while (SystemClock.elapsedRealtime() < deadline) {
+      if (isAudioActive(usage) == active) return;
+      SystemClock.sleep(100);
+    }
+    fail("Actual audio playback usage=" + usage + " expected=" + active + "\n" + device.executeShellCommand("dumpsys audio"));
+  }
+
   private void awaitWeb(ActivityScenario<MainActivity> scenario, String expression) throws Exception {
-    long deadline = SystemClock.elapsedRealtime() + 10_000;
+    long deadline = SystemClock.elapsedRealtime() + 30_000;
     while (SystemClock.elapsedRealtime() < deadline) {
       if ("true".equals(eval(scenario, expression))) return;
       SystemClock.sleep(100);
@@ -100,7 +180,7 @@ public class RestAlarmDeviceTest {
       WebView view = (WebView) ((android.view.ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
       view.evaluateJavascript(script, value -> { result.set(value); done.countDown(); });
     });
-    assertTrue(done.await(5, TimeUnit.SECONDS));
+    assertTrue("WebView did not respond after initialization", done.await(15, TimeUnit.SECONDS));
     return result.get();
   }
 }

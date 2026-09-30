@@ -10,6 +10,11 @@ public final class RestAlarmReceiver extends BroadcastReceiver {
   public void onReceive(Context context, Intent intent) {
     synchronized (RestAlarmState.class) {
       if (!RestAlarmState.claim(context, intent.getStringExtra("token"))) return;
+      // AlarmManager releases its wake lock when onReceive returns. Cover service handoff.
+      android.os.PowerManager power = context.getSystemService(android.os.PowerManager.class);
+      android.os.PowerManager.WakeLock handoff = power.newWakeLock(
+        android.os.PowerManager.PARTIAL_WAKE_LOCK, "vantalift:alarm-handoff");
+      handoff.acquire(10_000);
       try {
         RestAlarmService.start(context.getApplicationContext());
       } catch (RuntimeException error) {

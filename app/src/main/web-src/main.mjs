@@ -1,3 +1,4 @@
+import { restoreWorkout } from './services/workout-recovery.mjs';
 import { dom } from './core/dom.mjs';
 import { createAutoBackup } from './data/store.mjs';
 import {
@@ -41,6 +42,6 @@ dom.add.onclick = addDay;
 window.VantaLiftHandleBack = handleAppBack;
 window.GymProResume = resumeTimers;
 
-nav('home');
+nav(restoreWorkout());
 restoreRestTimer();
 createAutoBackup(false);

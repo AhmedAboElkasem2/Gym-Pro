@@ -81,3 +81,27 @@ CI additionally requires native state/focus unit tests, Android lint, and API 35
 device tests (locked-screen/Doze delivery, persistent notification, foreground dialog,
 Back handling and explicit OK acknowledgement) before publishing the verified APK.
 The existing application ID, workout storage and stable signing key are unchanged.
+
+### Background countdown and workout recovery (3.1.5)
+
+The foreground service now starts when the user starts rest, not when rest expires.
+It uses the exact-alarm holder's systemExempted foreground type while counting down,
+and adds mediaPlayback on completion. A system notification chronometer draws the
+remaining time without per-second WebView work. The exact AlarmClock remains the
+wake-up source, with an in-process deadline callback as a duplicate-safe fallback.
+Startup wake locks cover the receiver-to-service handoff (10-second ceiling) and
+focus retries (10-second renewable ceiling, released when playback starts or stops).
+Playback then uses MediaPlayer's own wake mode. No wake lock is held for countdown.
+
+Notification intents use SINGLE_TOP, so opening one does not rebuild the WebView.
+An active-workout repository separately snapshots each edit, including selected
+exercises, sets, warmups, notes and original start time. Startup resumes that session;
+finish and explicit exit remove it. Stable session IDs also prevent a crash between
+history save and snapshot removal from resurrecting a completed workout.
+
+API 35/36 device tests now observe actual active alarm audio before reopening the
+app, including with a second APK/UID playing media. The audio-fixture module is
+emulator-only; it is never packaged in the delivered app. Tests also verify the
+notification chronometer, same-Activity reentry, and recovery after Activity/WebView
+recreation. These improve the earlier notification-only background regression test;
+real Realme/Spotify behavior still requires a hardware trial.

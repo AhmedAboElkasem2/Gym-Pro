@@ -141,6 +141,12 @@ export function stopRestTimer(reset = true, cancelNative = true) {
 }
 
 export function restoreRestTimer() {
+  if (window.GymNative?.getRestRemainingMillis) {
+    const remaining = Number(window.GymNative.getRestRemainingMillis());
+    restDeadline = remaining > 0 ? Date.now() + remaining : 0;
+    if (restDeadline) localStorage.setItem(REST_DEADLINE_KEY, String(restDeadline));
+    else localStorage.removeItem(REST_DEADLINE_KEY);
+  }
   if (restDeadline > Date.now()) {
     restSeconds = Math.max(0, Math.ceil((restDeadline - Date.now()) / 1000));
     nativeRestScheduled = true;
