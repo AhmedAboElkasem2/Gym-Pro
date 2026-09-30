@@ -26,7 +26,7 @@ export function settingsView() {
   <div class="field"><button class="btn block" id="copyBackup">Copy Backup JSON</button></div><div class="field"><button class="btn block" id="pasteBackup">Paste Backup JSON</button></div>
   <div class="field"><label>AUTO BACKUPS</label><button class="btn block backup-manager" id="manageBackups"><span>Manage local snapshots</span><b>${backups.length}/5</b></button></div>
   <button class="btn danger block" id="reset">Reset to AboElkasem program</button></div>
-  <div class="developer-card"><div class="developer-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><path class="dev-hex" d="M24 3 40 12v24L24 45 8 36V12Z"/><path class="dev-code" d="m20 16-7 8 7 8m8-16 7 8-7 8m-2-19-4 22"/></svg></div><div><span>DEVELOPED BY</span><strong>Ahmed AboElkasem</strong><small>Crafted for VantaLift</small></div></div>`;
+  <div class="developer-card tri-led-frame"><div class="tri-led-surface developer-card-surface"><div class="developer-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><path class="dev-hex" d="M24 3 40 12v24L24 45 8 36V12Z"/><path class="dev-code" d="m20 16-7 8 7 8m8-16 7 8-7 8m-2-19-4 22"/></svg></div><div><span>DEVELOPED BY</span><strong>Ahmed AboElkasem</strong><small>Crafted for VantaLift</small></div></div></div>`;
 
   $('#unit').value = state.settings.unit;
   $('#unit').onchange = (event) => {
