@@ -65,14 +65,15 @@ if(/\.tri-led-frame::before[\s\S]*?(?:filter|backdrop-filter)\s*:/.test(styles))
 
 const restAlarmScheduler=fs.readFileSync(path.join(javaRoot,'RestAlarmScheduler.java'),'utf8');
 const restAlarmService=fs.readFileSync(path.join(javaRoot,'RestAlarmService.java'),'utf8');
+const restAlarmAudio=fs.readFileSync(path.join(javaRoot,'RestAlarmAudio.java'),'utf8');
 const restAlarmFeature=fs.readFileSync(path.join(webRoot,'features/rest-alarm.mjs'),'utf8');
 const manifest=fs.readFileSync('app/src/main/AndroidManifest.xml','utf8');
 if(!restAlarmScheduler.includes('setAlarmClock')) throw new Error('Rest alarm must use AlarmClock scheduling for lock-screen reliability');
-if(!restAlarmService.includes('AUDIOFOCUS_GAIN_TRANSIENT')) throw new Error('Persistent rest alarm must request transient audio focus');
-if(!restAlarmService.includes('setLooping(true)')) throw new Error('Persistent rest alarm sound must loop until acknowledged');
-if(!restAlarmService.includes('VibrationEffect.createWaveform(pattern, 0)')) throw new Error('Persistent rest vibration must repeat');
+if(!restAlarmAudio.includes('AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK')) throw new Error('Persistent rest alarm must request transient audio focus');
+if(!restAlarmAudio.includes('setLooping(true)')) throw new Error('Persistent rest alarm sound must loop until acknowledged');
+if(!restAlarmAudio.includes('VibrationEffect.createWaveform(pattern, 0)')) throw new Error('Persistent rest vibration must repeat');
 if(!restAlarmService.includes('START_STICKY')) throw new Error('Persistent rest alarm service must survive process pressure');
 if(!manifest.includes('android:foregroundServiceType="mediaPlayback"')) throw new Error('Rest alarm foreground service type is missing');
 if(!manifest.includes('FOREGROUND_SERVICE_MEDIA_PLAYBACK')) throw new Error('Rest alarm media playback foreground-service permission is missing');
-if(!restAlarmFeature.includes('The Rest Time Is Over , Get up and BE HULK')) throw new Error('Rest-complete Hulk message is missing');
+if(!restAlarmFeature.includes('The Rest Time Is Over, Get up and BE HULK')) throw new Error('Rest-complete Hulk message is missing');
 if(!restAlarmFeature.includes('persistent: true')) throw new Error('Rest-complete dialog must be non-dismissible until OK');

@@ -5,6 +5,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.util.Log;
+import java.util.UUID;
 
 final class RestAlarmScheduler {
   private static final int ALARM_REQUEST_CODE = 9411;
@@ -15,9 +17,10 @@ final class RestAlarmScheduler {
     this.context = context.getApplicationContext();
   }
 
-  private PendingIntent alarmIntent() {
+  private PendingIntent alarmIntent(String token) {
     Intent intent = new Intent(context, RestAlarmReceiver.class);
     intent.setAction("com.ahmed.gympro.REST_COMPLETE");
+    intent.putExtra("token", token);
     int flags = PendingIntent.FLAG_UPDATE_CURRENT;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       flags |= PendingIntent.FLAG_IMMUTABLE;
@@ -39,10 +42,13 @@ final class RestAlarmScheduler {
     try {
       AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
       if (manager == null) return false;
+      if (Build.VERSION.SDK_INT >= 31 && !manager.canScheduleExactAlarms()) return false;
 
       cancel();
       long triggerAt = System.currentTimeMillis() + Math.max(1, seconds) * 1000L;
-      PendingIntent operation = alarmIntent();
+      String token = UUID.randomUUID().toString();
+      RestAlarmState.pending(context, token);
+      PendingIntent operation = alarmIntent(token);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         AlarmManager.AlarmClockInfo info =
@@ -54,13 +60,16 @@ final class RestAlarmScheduler {
         manager.set(AlarmManager.RTC_WAKEUP, triggerAt, operation);
       }
       return true;
-    } catch (Exception ignored) {
+    } catch (RuntimeException error) {
+      RestAlarmState.pending(context, null);
+      Log.e("RestAlarm", "Exact rest alarm could not be scheduled", error);
       return false;
     }
   }
 
   void cancel() {
+    RestAlarmState.pending(context, null);
     AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-    if (manager != null) manager.cancel(alarmIntent());
+    if (manager != null) manager.cancel(alarmIntent(null));
   }
 }

@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 final class RestAlarmState {
   private static final String PREFS = "vantalift-rest-alarm";
   private static final String ACTIVE = "active";
+  private static final String PENDING = "pending";
 
   private RestAlarmState() {}
 
@@ -21,7 +22,17 @@ final class RestAlarmState {
     prefs(context).edit().putBoolean(ACTIVE, false).apply();
   }
 
-  private static SharedPreferences prefs(Context context) {
+  static void pending(Context context, String token) {
+    prefs(context).edit().putString(PENDING, token).apply();
+  }
+
+  static boolean claim(Context context, String token) {
+    if (token == null || !token.equals(prefs(context).getString(PENDING, ""))) return false;
+    prefs(context).edit().remove(PENDING).putBoolean(ACTIVE, true).apply();
+    return true;
+  }
+
+  static SharedPreferences prefs(Context context) {
     return context.getApplicationContext()
       .getSharedPreferences(PREFS, Context.MODE_PRIVATE);
   }
