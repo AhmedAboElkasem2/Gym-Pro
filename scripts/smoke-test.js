@@ -30,7 +30,7 @@ const localStorage={
   removeItem(k){store.delete(k)}
 };
 document.querySelector('#modal').classList.add('hide');
-const window={addEventListener(){},GymNative:{startRestAlarm(){return true},cancelRestAlarm(){}}};
+const window={addEventListener(){},GymNative:{startRestAlarm(){return true},cancelRestAlarm(){},acknowledgeRestAlarm(){},isRestAlarmActive(){return false}}};
 const sandbox={
   console,document,window,localStorage,
   scrollTo(){},setTimeout(){return 1},clearTimeout(){},
@@ -46,6 +46,10 @@ if(!nodes.get('#app')?.innerHTML.includes('NEXT WORKOUT')) throw new Error('Smar
 if(typeof window.VantaLiftHandleBack!=='function') throw new Error('App back handler missing');
 if(window.VantaLiftHandleBack()!==false) throw new Error('Home back should delegate to Android');
 if(typeof window.GymProResume!=='function') throw new Error('Native resume callback missing');
+if(typeof window.VantaLiftRestAlarmActive!=='function') throw new Error('Persistent rest alarm callback missing');
+window.VantaLiftRestAlarmActive();
+if(!nodes.get('#modal')?.innerHTML.includes('The Rest Time Is Over , Get up and')) throw new Error('Rest-complete Hulk dialog did not render');
+if(!nodes.get('#modal')?.classList.contains('persistent-modal')) throw new Error('Rest-complete dialog must stay persistent until OK');
 if(!store.has('vantalift-auto-backups-v1')) throw new Error('Startup auto-backup was not initialized');
 const css=fs.readFileSync('app/src/main/assets/styles.css','utf8');
 if(css.includes('backdrop-filter')) throw new Error('Expensive backdrop-filter must stay disabled');
