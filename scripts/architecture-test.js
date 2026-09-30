@@ -38,7 +38,7 @@ if(!sourceFiles.includes('export const PROGRESSION_REP_THRESHOLD = 12')) throw n
 if(!sourceFiles.includes('export const PROGRESSION_WEIGHT_STEP = 5')) throw new Error('Progression increment is not explicit domain policy');
 
 const javaRoot='app/src/main/java/com/ahmed/gympro';
-const nativeModules=['MainActivity.java','RestAlarmScheduler.java','BackupFileManager.java','GymNativeBridge.java','VantaWebViewClient.java','WindowInsetsHelper.java'];
+const nativeModules=['MainActivity.java','RestAlarmScheduler.java','RestAlarmReceiver.java','RestAlarmPlayer.java','ExactAlarmPermissionHelper.java','BackupFileManager.java','GymNativeBridge.java','VantaWebViewClient.java','WindowInsetsHelper.java'];
 for(const file of nativeModules){
   if(!fs.existsSync(path.join(javaRoot,file))) throw new Error('Missing native module: '+file);
 }
@@ -62,3 +62,14 @@ if(!settingsView.includes('developer-card tri-led-frame')) throw new Error('Deve
 if(!styles.includes('.tri-led-frame::before')||!styles.includes('@keyframes triLedSpin')) throw new Error('Shared tri-color LED utility missing');
 if(styles.includes('@keyframes developerLedSpin')) throw new Error('Legacy duplicated developer LED animation remains');
 if(/\.tri-led-frame::before[\s\S]*?(?:filter|backdrop-filter)\s*:/.test(styles)) throw new Error('Shared tri-color LED must remain filter-free');
+
+const restScheduler=fs.readFileSync(path.join(javaRoot,'RestAlarmScheduler.java'),'utf8');
+const restPlayer=fs.readFileSync(path.join(javaRoot,'RestAlarmPlayer.java'),'utf8');
+const manifest=fs.readFileSync('app/src/main/AndroidManifest.xml','utf8');
+if(!restScheduler.includes('setAlarmClock')) throw new Error('Rest timer must use AlarmClock for precise screen-off delivery');
+if(!restScheduler.includes('canScheduleExactAlarms')) throw new Error('Rest timer must handle exact-alarm access');
+if(!restPlayer.includes('AUDIOFOCUS_GAIN_TRANSIENT')) throw new Error('Rest alarm must request transient audio focus');
+if(!restPlayer.includes('USAGE_ALARM')) throw new Error('Rest alarm must use alarm audio attributes');
+if(!restPlayer.includes('PLAY_DURATION_MS = 7000L')) throw new Error('Rest alarm playback duration regressed');
+if(!manifest.includes('android.permission.SCHEDULE_EXACT_ALARM')) throw new Error('Exact alarm permission missing');
+if(manifest.includes('android.permission.USE_EXACT_ALARM')) throw new Error('Personal build should use requestable exact-alarm access');
