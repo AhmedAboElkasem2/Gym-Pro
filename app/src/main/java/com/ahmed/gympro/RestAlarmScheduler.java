@@ -8,37 +8,63 @@ import android.os.Build;
 
 final class RestAlarmScheduler {
   private static final int REQUEST_CODE = 9411;
+  private static final int SHOW_APP_REQUEST_CODE = 9412;
   private final Context context;
 
   RestAlarmScheduler(Context context) {
-    this.context = context;
+    this.context = context.getApplicationContext();
   }
 
-  private PendingIntent pendingIntent() {
+  private PendingIntent alarmIntent() {
     Intent intent = new Intent(context, RestAlarmReceiver.class);
     intent.setAction("com.ahmed.gympro.REST_COMPLETE");
+
     int flags = PendingIntent.FLAG_UPDATE_CURRENT;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       flags |= PendingIntent.FLAG_IMMUTABLE;
     }
+
     return PendingIntent.getBroadcast(context, REQUEST_CODE, intent, flags);
   }
 
+  private PendingIntent showAppIntent() {
+    Intent intent = new Intent(context, MainActivity.class);
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+    int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      flags |= PendingIntent.FLAG_IMMUTABLE;
+    }
+
+    return PendingIntent.getActivity(context, SHOW_APP_REQUEST_CODE, intent, flags);
+  }
+
   boolean schedule(int seconds) {
+    AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+    if (manager == null) return false;
+
+    cancel();
+
+    long triggerAt = System.currentTimeMillis() + (Math.max(1, seconds) * 1000L);
+    PendingIntent alarmIntent = alarmIntent();
+
     try {
-      AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-      if (manager == null) return false;
-      cancel();
-      long triggerAt = System.currentTimeMillis() + (Math.max(1, seconds) * 1000L);
-      PendingIntent intent = pendingIntent();
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, intent);
-      } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-        manager.setExact(AlarmManager.RTC_WAKEUP, triggerAt, intent);
-      } else {
-        manager.set(AlarmManager.RTC_WAKEUP, triggerAt, intent);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !manager.canScheduleExactAlarms()) {
+        manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, alarmIntent);
+        return true;
       }
+
+      AlarmManager.AlarmClockInfo alarmClockInfo =
+        new AlarmManager.AlarmClockInfo(triggerAt, showAppIntent());
+      manager.setAlarmClock(alarmClockInfo, alarmIntent);
       return true;
+    } catch (SecurityException ignored) {
+      try {
+        manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, alarmIntent);
+        return true;
+      } catch (Exception fallbackError) {
+        return false;
+      }
     } catch (Exception ignored) {
       return false;
     }
@@ -46,6 +72,8 @@ final class RestAlarmScheduler {
 
   void cancel() {
     AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-    if (manager != null) manager.cancel(pendingIntent());
+    if (manager != null) {
+      manager.cancel(alarmIntent());
+    }
   }
 }
