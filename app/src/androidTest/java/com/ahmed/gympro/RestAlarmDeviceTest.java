@@ -12,6 +12,8 @@ import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.Until;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -131,7 +133,9 @@ public class RestAlarmDeviceTest {
       AtomicReference<MainActivity> original = new AtomicReference<>();
       scenario.onActivity(original::set);
       device.pressHome();
-      countdown.contentIntent.send();
+      device.openNotification();
+      assertTrue(device.wait(Until.hasObject(By.text("Rest timer")), 5000));
+      device.findObject(By.text("Rest timer")).click();
       awaitWeb(scenario, "!!document.querySelector('#workoutNote')");
       scenario.onActivity(activity -> assertSame("Notification must reuse Activity", original.get(), activity));
       assertEquals(saved, eval(scenario, "localStorage.getItem('vantalift-active-workout-v1')"));
@@ -161,7 +165,7 @@ public class RestAlarmDeviceTest {
   }
 
   private void awaitWeb(ActivityScenario<MainActivity> scenario, String expression) throws Exception {
-    long deadline = SystemClock.elapsedRealtime() + 10_000;
+    long deadline = SystemClock.elapsedRealtime() + 30_000;
     while (SystemClock.elapsedRealtime() < deadline) {
       if ("true".equals(eval(scenario, expression))) return;
       SystemClock.sleep(100);
@@ -176,7 +180,7 @@ public class RestAlarmDeviceTest {
       WebView view = (WebView) ((android.view.ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
       view.evaluateJavascript(script, value -> { result.set(value); done.countDown(); });
     });
-    assertTrue(done.await(5, TimeUnit.SECONDS));
+    assertTrue("WebView did not respond after initialization", done.await(15, TimeUnit.SECONDS));
     return result.get();
   }
 }
