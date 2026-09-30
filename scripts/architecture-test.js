@@ -53,3 +53,12 @@ console.log('VantaLift ES-module architecture guard passed');
 const gradle=fs.readFileSync('app/build.gradle','utf8');
 if(!gradle.includes('tasks.register("bundleWeb", Exec)')) throw new Error('Gradle must own web bundling');
 if(!gradle.includes('preBuild.dependsOn bundleWeb')) throw new Error('Android build must depend on the web bundle');
+
+const homeView=fs.readFileSync(path.join(webRoot,'views/home.mjs'),'utf8');
+const settingsView=fs.readFileSync(path.join(webRoot,'views/settings.mjs'),'utf8');
+const styles=fs.readFileSync('app/src/main/assets/styles.css','utf8');
+if(!homeView.includes('smart-hero tri-led-frame')) throw new Error('Home hero must use shared tri-color LED utility');
+if(!settingsView.includes('developer-card tri-led-frame')) throw new Error('Developer card must use shared tri-color LED utility');
+if(!styles.includes('.tri-led-frame::before')||!styles.includes('@keyframes triLedSpin')) throw new Error('Shared tri-color LED utility missing');
+if(styles.includes('@keyframes developerLedSpin')) throw new Error('Legacy duplicated developer LED animation remains');
+if(/\.tri-led-frame::before[\s\S]*?(?:filter|backdrop-filter)\s*:/.test(styles)) throw new Error('Shared tri-color LED must remain filter-free');
