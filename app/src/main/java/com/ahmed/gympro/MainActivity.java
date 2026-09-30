@@ -25,6 +25,7 @@ public class MainActivity extends Activity {
 
     restAlarmScheduler = new RestAlarmScheduler(this);
     backupFileManager = new BackupFileManager(this);
+    ExactAlarmPermissionHelper.requestIfNeeded(this);
 
     GymNativeBridge bridge = new GymNativeBridge(
       this,
