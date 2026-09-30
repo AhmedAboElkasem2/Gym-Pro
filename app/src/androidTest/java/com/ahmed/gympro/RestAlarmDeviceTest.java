@@ -49,8 +49,9 @@ public class RestAlarmDeviceTest {
   @Test public void lockedScreenAlarmPersistsAndOnlyOkStopsIt() throws Exception {
     try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
       awaitWeb(scenario, "typeof window.VantaLiftRestAlarmActive==='function'");
+      awaitVisualFrame(scenario);
       assertTrue(controller.schedule(8));
-      device.pressHome();
+      backgroundToLauncher();
       device.sleep();
       device.executeShellCommand("dumpsys battery unplug");
       device.executeShellCommand("dumpsys deviceidle force-idle");
@@ -84,6 +85,7 @@ public class RestAlarmDeviceTest {
   @Test public void completionWhileForegroundImmediatelyShowsDialog() throws Exception {
     try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
       awaitWeb(scenario, "typeof window.VantaLiftRestAlarmActive==='function'");
+      awaitVisualFrame(scenario);
       assertTrue(controller.schedule(2));
       awaitWeb(scenario, "document.querySelector('#modal').dataset.variant==='rest-alarm'");
       assertEquals("true", eval(scenario, "document.querySelector('#modal').textContent.includes('BE HULK')"));
@@ -95,6 +97,7 @@ public class RestAlarmDeviceTest {
   @Test public void musicKeepsPlayingWhileLockedAlarmStartsBeforeOpeningApp() throws Exception {
     try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
       awaitWeb(scenario, "typeof window.VantaLiftRestAlarmActive==='function'");
+      awaitVisualFrame(scenario);
       assertTrue(controller.schedule(12));
       device.executeShellCommand("am start -W -n com.ahmed.gympro.testmusic/.MusicActivity");
       awaitAudio(AudioAttributes.USAGE_MEDIA, true);
@@ -115,6 +118,7 @@ public class RestAlarmDeviceTest {
   @Test public void countdownNotificationOpensSameWorkoutAndRecreationRestoresAllEdits() throws Exception {
     try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
       awaitWeb(scenario, "typeof window.VantaLiftRestAlarmActive==='function'");
+      awaitVisualFrame(scenario);
       eval(scenario, "localStorage.removeItem('vantalift-active-workout-v1');location.reload()");
       awaitWeb(scenario, "!!document.querySelector('[data-start]')");
       eval(scenario, "document.querySelector('[data-start]').click()");
@@ -132,7 +136,7 @@ public class RestAlarmDeviceTest {
       assertTrue(countdown.when > System.currentTimeMillis());
       AtomicReference<MainActivity> original = new AtomicReference<>();
       scenario.onActivity(original::set);
-      device.pressHome();
+      backgroundToLauncher();
       device.openNotification();
       assertTrue(device.wait(Until.hasObject(By.text("Rest timer")), 5000));
       device.findObject(By.text("Rest timer")).click();
@@ -148,6 +152,25 @@ public class RestAlarmDeviceTest {
       eval(scenario, "document.querySelector('#exit').click();document.querySelector('#exitWorkoutNow').click()");
       assertEquals("null", eval(scenario, "localStorage.getItem('vantalift-active-workout-v1')"));
     }
+  }
+
+  private void backgroundToLauncher() throws Exception {
+    // Wait for the launcher transition instead of racing injected HOME/SLEEP key events
+    // against the first cold WebView frame on a freshly booted CI emulator.
+    device.executeShellCommand("am start -W -a android.intent.action.MAIN -c android.intent.category.HOME");
+    device.waitForIdle(2000);
+  }
+
+  private void awaitVisualFrame(ActivityScenario<MainActivity> scenario) throws Exception {
+    CountDownLatch rendered = new CountDownLatch(1);
+    scenario.onActivity(activity -> {
+      WebView view = (WebView) ((android.view.ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
+      view.postVisualStateCallback(0, new WebView.VisualStateCallback() {
+        @Override public void onComplete(long requestId) { rendered.countDown(); }
+      });
+    });
+    assertTrue("Initial WebView frame did not render", rendered.await(20, TimeUnit.SECONDS));
+    device.waitForIdle(2000);
   }
 
   private boolean isAudioActive(int usage) {
