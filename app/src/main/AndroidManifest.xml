@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-  <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+  <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
   <application android:allowBackup="true" android:icon="@drawable/ic_vantalift" android:roundIcon="@drawable/ic_vantalift" android:label="VantaLift" android:supportsRtl="true" android:theme="@style/AppTheme">
