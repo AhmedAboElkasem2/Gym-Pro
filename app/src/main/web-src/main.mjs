@@ -18,6 +18,7 @@ import {
   resumeTimers
 } from './services/timers.mjs';
 import { bindNativeBackupCallbacks } from './services/backup.mjs';
+import { bindNativeRestAlarmCallbacks } from './features/rest-alarm.mjs';
 
 registerRoutes({
   home: homeView,
@@ -34,6 +35,7 @@ bindNavigation();
 bindModalBackdrop();
 bindTimerLifecycle();
 bindNativeBackupCallbacks();
+bindNativeRestAlarmCallbacks();
 
 dom.add.onclick = addDay;
 window.VantaLiftHandleBack = handleAppBack;
