@@ -113,7 +113,7 @@ jobs:
           profile: pixel_2
           disable-animations: true
           emulator-boot-timeout: 300
-          script: gradle :audio-fixture:installDebug :app:connectedDebugAndroidTest --stacktrace
+          script: bash scripts/device-tests.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -121,6 +121,7 @@ jobs:
           path: |
             app/build/reports/androidTests/
             app/build/outputs/androidTest-results/
+            app/build/device-diagnostics/
 
   verified-apk:
     needs: [build, android-tests]
