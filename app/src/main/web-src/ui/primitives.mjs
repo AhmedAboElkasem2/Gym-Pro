@@ -8,14 +8,20 @@ export function toast(message) {
   setTimeout(() => dom.toast.classList.remove('show'), 1500);
 }
 
-export function openModal(html) {
+export function openModal(html, options = {}) {
   dom.modal.innerHTML = `<div class="sheet">${html}</div>`;
+  dom.modal.classList.toggle('persistent-modal', Boolean(options.persistent));
+  dom.modal.dataset.variant = options.variant || '';
   dom.modal.classList.remove('hide');
 }
 
-export function closeModal() {
+export function closeModal(force = false) {
+  if (!force && dom.modal.classList.contains('persistent-modal')) return false;
   dom.modal.classList.add('hide');
+  dom.modal.classList.remove('persistent-modal');
+  dom.modal.dataset.variant = '';
   dom.modal.innerHTML = '';
+  return true;
 }
 
 export function choice(exercise, key) {
