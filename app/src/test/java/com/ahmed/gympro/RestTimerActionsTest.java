@@ -23,10 +23,20 @@ public class RestTimerActionsTest {
     new RestAlarmController(context).schedule(90);
     new RestTimerActionReceiver().onReceive(context, new Intent(RestTimerActionReceiver.EXTEND)
       .putExtra("token", RestAlarmState.pendingToken(context)));
-    assertTrue(RestAlarmState.remainingMillis(context) >= 119000);
+    assertTrue(RestAlarmState.remainingMillis(context) >= 99000);
     new RestTimerActionReceiver().onReceive(context, new Intent(RestTimerActionReceiver.SKIP)
       .putExtra("token", RestAlarmState.pendingToken(context)));
     assertFalse(RestAlarmState.hasPending(context));
+    assertFalse(RestAlarmState.isActive(context));
+  }
+
+  @Test public void reduceSubtractsTenSecondsWithoutRinging() {
+    new RestAlarmController(context).schedule(90);
+    new RestTimerActionReceiver().onReceive(context, new Intent(RestTimerActionReceiver.REDUCE)
+      .putExtra("token", RestAlarmState.pendingToken(context)));
+    long remaining = RestAlarmState.remainingMillis(context);
+    assertTrue(remaining >= 79000 && remaining <= 81000);
+    assertTrue(RestAlarmState.hasPending(context));
     assertFalse(RestAlarmState.isActive(context));
   }
 
@@ -42,8 +52,9 @@ public class RestTimerActionsTest {
 
   @Test public void notificationExposesThreeCountdownActionsButNoRingingSkip() {
     Notification countdown = new RestAlarmNotification(context).build(false, 90000);
-    assertEquals(3, countdown.actions.length);
-    assertEquals("+30 sec", countdown.actions[0].title.toString());
+    assertEquals(4, countdown.actions.length);
+    assertEquals("-10 sec", countdown.actions[0].title.toString());
+    assertEquals("+10 sec", countdown.actions[1].title.toString());
     assertNull(new RestAlarmNotification(context).build(true, 0).actions);
   }
 }
