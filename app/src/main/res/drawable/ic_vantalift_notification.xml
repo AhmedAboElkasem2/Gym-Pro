@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Notification icons are monochrome masks on Android. This silhouette
+         mirrors the new VantaLift hexagonal emblem instead of the old V/bar mark. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="8"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"
+        android:pathData="M54,12 L88,31 L88,72 L54,94 L20,72 L20,31 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M27,30 L42,30 L54,64 L66,30 L81,30 L62,80 L46,80 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M36,22 L72,22 L68,29 L40,29 Z" />
+</vector>

@@ -2,7 +2,7 @@ plugins { id 'com.android.application' }
 android {
   namespace 'com.ahmed.gympro'
   compileSdk 35
-  defaultConfig { applicationId "com.ahmed.gympro"; minSdk 23; targetSdk 35; versionCode 33; versionName "3.2.3"; testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner" }
+  defaultConfig { applicationId "com.ahmed.gympro"; minSdk 23; targetSdk 35; versionCode 34; versionName "3.2.4"; testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner" }
   signingConfigs {
     stableDebug {
       storeFile file(System.getProperty("user.home") + "/.android/debug.keystore")

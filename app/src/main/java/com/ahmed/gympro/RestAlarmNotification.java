@@ -46,7 +46,7 @@ final class RestAlarmNotification {
     Notification.Builder builder = Build.VERSION.SDK_INT >= 26
       ? new Notification.Builder(context, ringing ? ALARM_CHANNEL : TIMER_CHANNEL)
       : new Notification.Builder(context);
-    builder.setSmallIcon(R.drawable.ic_vantalift).setLargeIcon(android.graphics.BitmapFactory.decodeResource(context.getResources(), R.drawable.vantalift_app_icon)).setContentIntent(open)
+    builder.setSmallIcon(R.drawable.ic_vantalift_notification).setContentIntent(open)
       .setContentTitle(ringing ? "Rest time is over" : "Rest timer")
       .setContentText(ringing ? "Open your workout and tap OK to stop the alarm." : "Recovery · Next set")
       .setColor(0xFFE53935).setOngoing(true).setAutoCancel(false).setOnlyAlertOnce(true)
