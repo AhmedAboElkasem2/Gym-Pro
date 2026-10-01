@@ -60,7 +60,7 @@ export function showWorkoutExitDialog() {
     session.workout = null;
     persistWorkout();
     stopRestTimer();
-    nav('routines');
+    nav('home');
   };
 }
 

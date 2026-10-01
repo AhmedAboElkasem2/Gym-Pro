@@ -3,19 +3,21 @@
     android:height="24dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Notification icons are monochrome masks on Android. This silhouette
-         mirrors the new VantaLift hexagonal emblem instead of the old V/bar mark. -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="8"
-        android:strokeLineJoin="round"
-        android:strokeLineCap="round"
-        android:pathData="M54,12 L88,31 L88,72 L54,94 L20,72 L20,31 Z" />
+    <!-- Android status-bar icons are monochrome masks. This geometry mirrors
+         the approved VantaLift emblem: angular hex frame + deep central V. -->
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M27,30 L42,30 L54,64 L66,30 L81,30 L62,80 L46,80 Z" />
+        android:fillType="evenOdd"
+        android:pathData="
+          M54,8 L88,27 L93,34 L93,74 L88,81 L54,100 L20,81 L15,74 L15,34 L20,27 Z
+          M54,18 L25,34 L25,70 L54,88 L83,70 L83,34 Z" />
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M36,22 L72,22 L68,29 L40,29 Z" />
+        android:pathData="M24,31 L40,31 L54,67 L68,31 L84,31 L63,84 L45,84 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M31,24 L45,16 L63,16 L77,24 L69,29 L39,29 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M22,48 L29,44 L29,66 L22,62 Z M86,48 L79,44 L79,66 L86,62 Z" />
 </vector>

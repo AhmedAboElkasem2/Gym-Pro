@@ -157,5 +157,5 @@ export function finishWorkout() {
   session.workout = null;
   persistWorkout();
   stopRestTimer();
-  nav('summary');
+  nav('home');
 }
