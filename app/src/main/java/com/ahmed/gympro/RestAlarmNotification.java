@@ -46,7 +46,7 @@ final class RestAlarmNotification {
     Notification.Builder builder = Build.VERSION.SDK_INT >= 26
       ? new Notification.Builder(context, ringing ? ALARM_CHANNEL : TIMER_CHANNEL)
       : new Notification.Builder(context);
-    builder.setSmallIcon(R.drawable.ic_vantalift).setContentIntent(open)
+    builder.setSmallIcon(R.drawable.ic_vantalift).setLargeIcon(android.graphics.BitmapFactory.decodeResource(context.getResources(), R.drawable.vantalift_app_icon)).setContentIntent(open)
       .setContentTitle(ringing ? "Rest time is over" : "Rest timer")
       .setContentText(ringing ? "Open your workout and tap OK to stop the alarm." : "Recovery · Next set")
       .setColor(0xFFE53935).setOngoing(true).setAutoCancel(false).setOnlyAlertOnce(true)
@@ -54,7 +54,8 @@ final class RestAlarmNotification {
       .setCategory(ringing ? Notification.CATEGORY_ALARM : Notification.CATEGORY_PROGRESS)
       .setPriority(ringing ? Notification.PRIORITY_HIGH : Notification.PRIORITY_DEFAULT);
     if (!ringing) {
-      builder.addAction(new Notification.Action.Builder(null, "+30 sec", action(RestTimerActionReceiver.EXTEND, 9416)).build())
+      builder.addAction(new Notification.Action.Builder(null, "-10 sec", action(RestTimerActionReceiver.REDUCE, 9415)).build())
+        .addAction(new Notification.Action.Builder(null, "+10 sec", action(RestTimerActionReceiver.EXTEND, 9416)).build())
         .addAction(new Notification.Action.Builder(null, "Skip", action(RestTimerActionReceiver.SKIP, 9417)).build())
         .addAction(new Notification.Action.Builder(null, "Workout", open).build());
       if (Build.VERSION.SDK_INT >= 24) {
