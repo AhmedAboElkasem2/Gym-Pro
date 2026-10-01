@@ -153,7 +153,29 @@ public class RestAlarmDeviceTest {
       assertEquals("\"Saved workout note\"", eval(scenario, "document.querySelector('#workoutNote').value"));
       assertEquals(saved, eval(scenario, "localStorage.getItem('vantalift-active-workout-v1')"));
       eval(scenario, "document.querySelector('#exit').click();document.querySelector('#exitWorkoutNow').click()");
+      awaitWeb(scenario, "document.querySelector('nav button[data-v=\\\"home\\\"]').classList.contains('on')");
       assertEquals("null", eval(scenario, "localStorage.getItem('vantalift-active-workout-v1')"));
+    }
+  }
+
+  @Test public void workoutExitButtonAndSystemBackBothReturnHome() throws Exception {
+    try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
+      awaitWeb(scenario, "typeof window.VantaLiftRestAlarmActive==='function'");
+      awaitVisualFrame(scenario);
+      eval(scenario, "localStorage.removeItem('vantalift-active-workout-v1');window.__vantaReloading=true;location.reload()");
+      awaitWeb(scenario, "!window.__vantaReloading && !!document.querySelector('[data-start]')");
+
+      eval(scenario, "document.querySelector('[data-start]').click()");
+      awaitWeb(scenario, "!!document.querySelector('#exit')");
+      eval(scenario, "document.querySelector('#exit').click();document.querySelector('#exitWorkoutNow').click()");
+      awaitWeb(scenario, "document.querySelector('nav button[data-v=\\\"home\\\"]').classList.contains('on')");
+
+      eval(scenario, "document.querySelector('[data-start]').click()");
+      awaitWeb(scenario, "!!document.querySelector('#exit')");
+      eval(scenario, "window.VantaLiftHandleBack()");
+      awaitWeb(scenario, "!!document.querySelector('#exitWorkoutNow')");
+      eval(scenario, "document.querySelector('#exitWorkoutNow').click()");
+      awaitWeb(scenario, "document.querySelector('nav button[data-v=\\\"home\\\"]').classList.contains('on')");
     }
   }
 
@@ -170,7 +192,11 @@ public class RestAlarmDeviceTest {
       eval(scenario, "document.querySelector('[data-swap]').click()");
       awaitWeb(scenario, "!!document.querySelector('[data-swap-index]')");
       eval(scenario, "document.querySelector('[data-swap-index]').click();var w=document.querySelector('[data-f=w]');w.value='25';w.dispatchEvent(new Event('input'));var r=document.querySelector('[data-f=reps]');r.value='8';r.dispatchEvent(new Event('input'));document.querySelector('[data-f=done]').click()");
-      eval(scenario, "document.querySelector('#finish').click();document.querySelector('#workoutCard').click()");
+      eval(scenario, "document.querySelector('#finish').click()");
+      awaitWeb(scenario, "document.querySelector('nav button[data-v=\\\"home\\\"]').classList.contains('on')");
+      eval(scenario, "document.querySelector('nav button[data-v=\\\"history\\\"]').click()");
+      awaitWeb(scenario, "!!document.querySelector('[data-history-card]')");
+      eval(scenario, "document.querySelector('[data-history-card]').click()");
       awaitWeb(scenario, "!!document.querySelector('#workoutCardCanvas')");
       assertEquals("1080", eval(scenario, "document.querySelector('#workoutCardCanvas').width"));
       assertEquals("1920", eval(scenario, "document.querySelector('#workoutCardCanvas').height"));
