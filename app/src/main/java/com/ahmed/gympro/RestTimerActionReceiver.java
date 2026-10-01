@@ -6,6 +6,7 @@ import android.content.Intent;
 
 /** Notification controls only affect the countdown token that rendered them. */
 public final class RestTimerActionReceiver extends BroadcastReceiver {
+  static final String REDUCE = "com.ahmed.gympro.REST_REDUCE";
   static final String EXTEND = "com.ahmed.gympro.REST_EXTEND";
   static final String SKIP = "com.ahmed.gympro.REST_SKIP";
 
@@ -14,9 +15,12 @@ public final class RestTimerActionReceiver extends BroadcastReceiver {
       String token = intent.getStringExtra("token");
       if (token == null || !token.equals(RestAlarmState.pendingToken(context))) return;
       RestAlarmController controller = new RestAlarmController(context);
-      if (EXTEND.equals(intent.getAction())) {
+      if (REDUCE.equals(intent.getAction())) {
         long remaining = RestAlarmState.remainingMillis(context);
-        if (remaining > 0) controller.schedule((int) ((remaining + 999) / 1000) + 30);
+        if (remaining > 0) controller.schedule(Math.max(1, (int) ((remaining + 999) / 1000) - 10));
+      } else if (EXTEND.equals(intent.getAction())) {
+        long remaining = RestAlarmState.remainingMillis(context);
+        if (remaining > 0) controller.schedule((int) ((remaining + 999) / 1000) + 10);
       } else if (SKIP.equals(intent.getAction())) {
         controller.cancel();
       }
