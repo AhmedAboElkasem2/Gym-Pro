@@ -6,22 +6,15 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.FrameLayout;
 
 import org.json.JSONObject;
 
 public class MainActivity extends Activity {
-  private static final long MIN_SPLASH_MS = 720L;
-  private static final long SPLASH_FADE_MS = 240L;
-
   private WebView webView;
-  private FrameLayout rootView;
-  private VantaSplashView splashView;
-  private long splashStartedAt;
+  private VantaSplashController splashController;
   private RestAlarmController restAlarmController;
   private BackupFileManager backupFileManager;
   private final SharedPreferences.OnSharedPreferenceChangeListener alarmListener =
@@ -31,31 +24,12 @@ public class MainActivity extends Activity {
   protected void onCreate(Bundle state) {
     super.onCreate(state);
 
-    splashStartedAt = android.os.SystemClock.uptimeMillis();
-
-    rootView = new FrameLayout(this);
-    rootView.setBackgroundColor(0xFF050608);
-
     webView = new WebView(this);
     configureWebView(webView);
-    rootView.addView(
-      webView,
-      new FrameLayout.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT,
-        ViewGroup.LayoutParams.MATCH_PARENT
-      )
-    );
+    setContentView(webView);
 
-    splashView = new VantaSplashView(this);
-    splashView.setClickable(true);
-    splashView.setFocusable(true);
-    rootView.addView(
-      splashView,
-      new FrameLayout.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT,
-        ViewGroup.LayoutParams.MATCH_PARENT
-      )
-    );
+    splashController = new VantaSplashController(this);
+    splashController.show();
 
     restAlarmController = new RestAlarmController(this);
     backupFileManager = new BackupFileManager(this);
@@ -68,8 +42,6 @@ public class MainActivity extends Activity {
     );
     webView.addJavascriptInterface(bridge, "GymNative");
     webView.setWebViewClient(new VantaWebViewClient(this, this::onWebPageReady));
-
-    setContentView(rootView);
     webView.loadUrl("file:///android_asset/index.html");
   }
 
@@ -93,26 +65,7 @@ public class MainActivity extends Activity {
   private void onWebPageReady() {
     applyWindowInsets();
     dispatchRestAlarmState();
-    dismissSplash();
-  }
-
-  private void dismissSplash() {
-    if (splashView == null) return;
-
-    long elapsed = android.os.SystemClock.uptimeMillis() - splashStartedAt;
-    long delay = Math.max(0L, MIN_SPLASH_MS - elapsed);
-
-    splashView.postDelayed(() -> {
-      if (splashView == null || splashView.getParent() == null) return;
-      splashView.animate()
-        .alpha(0f)
-        .setDuration(SPLASH_FADE_MS)
-        .withEndAction(() -> {
-          if (rootView != null && splashView != null) rootView.removeView(splashView);
-          splashView = null;
-        })
-        .start();
-    }, delay);
+    if (splashController != null) splashController.dismissWhenReady();
   }
 
   private void applyWindowInsets() {
@@ -121,9 +74,7 @@ public class MainActivity extends Activity {
 
   private void dispatchRestAlarmState() {
     if (restAlarmController == null || !restAlarmController.isActive()) return;
-    jsCallback(
-      "window.VantaLiftRestAlarmActive&&window.VantaLiftRestAlarmActive()"
-    );
+    jsCallback("window.VantaLiftRestAlarmActive&&window.VantaLiftRestAlarmActive()");
   }
 
   private void jsCallback(String script) {
@@ -185,15 +136,15 @@ public class MainActivity extends Activity {
     super.onResume();
     if (webView == null) return;
     applyWindowInsets();
-    webView.evaluateJavascript(
-      "if(window.GymProResume){window.GymProResume();}",
-      null
-    );
-    if (restAlarmController.isActive() || RestAlarmState.hasPending(this)) RestAlarmService.start(this);
+    webView.evaluateJavascript("if(window.GymProResume){window.GymProResume();}", null);
+    if (restAlarmController.isActive() || RestAlarmState.hasPending(this)) {
+      RestAlarmService.start(this);
+    }
     dispatchRestAlarmState();
   }
 
-  @Override protected void onNewIntent(Intent intent) {
+  @Override
+  protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
     dispatchRestAlarmState();
   }
@@ -208,12 +159,9 @@ public class MainActivity extends Activity {
       exitFromSystemBack();
       return;
     }
-
     webView.evaluateJavascript(
       "window.VantaLiftHandleBack ? window.VantaLiftHandleBack() : false",
-      handled -> {
-        if (!"true".equals(handled)) exitFromSystemBack();
-      }
+      handled -> { if (!"true".equals(handled)) exitFromSystemBack(); }
     );
   }
 }
