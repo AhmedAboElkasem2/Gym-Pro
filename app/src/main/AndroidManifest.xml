@@ -7,7 +7,7 @@
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED"/>
-  <application android:allowBackup="true" android:icon="@drawable/ic_vantalift" android:roundIcon="@drawable/ic_vantalift" android:label="VantaLift" android:supportsRtl="true" android:theme="@style/AppTheme">
+  <application android:allowBackup="true" android:icon="@drawable/vantalift_app_icon" android:roundIcon="@drawable/vantalift_app_icon" android:label="VantaLift" android:supportsRtl="true" android:theme="@style/AppTheme">
     <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.cards" android:exported="false" android:grantUriPermissions="true">
       <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/card_paths"/>
     </provider>

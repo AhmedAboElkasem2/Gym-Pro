@@ -1,0 +1,15 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+  <item>
+    <shape android:shape="rectangle">
+      <solid android:color="#050608"/>
+    </shape>
+  </item>
+  <item
+      android:width="196dp"
+      android:height="196dp"
+      android:gravity="center">
+    <bitmap
+        android:src="@drawable/vantalift_app_icon"
+        android:gravity="fill"/>
+  </item>
+</layer-list>

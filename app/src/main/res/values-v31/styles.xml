@@ -4,5 +4,9 @@
     <item name="android:statusBarColor">#080808</item>
     <item name="android:navigationBarColor">#080808</item>
     <item name="android:windowBackground">@drawable/launch_screen</item>
+    <item name="android:windowSplashScreenBackground">#050608</item>
+    <item name="android:windowSplashScreenAnimatedIcon">@drawable/vantalift_app_icon</item>
+    <item name="android:windowSplashScreenIconBackgroundColor">#050608</item>
+    <item name="android:windowSplashScreenAnimationDuration">280</item>
   </style>
 </resources>
